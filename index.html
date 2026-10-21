@@ -3,231 +3,279 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
 <title>SEISME</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: control deck on top, one dense sortable ledger, detail drawer slides in from the right. */
+/* Layout: fintech app — summary cards up top, pill controls, one clean list, sheet-style detail panel. */
 :root{
-  --bg:#0d1218; --panel:#141b23; --panel2:#1a232d; --line:#26323e; --fg:#d9e1e8; --muted:#8696a5;
-  --accent:#e0a54a; --accent-ink:#1b1206; --good:#4fbf8a; --bad:#e2685c; --warn:#d9b44a;
-  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
-  color-scheme:dark;
+  --bg:#f2f3f5; --surface:#ffffff; --surface2:#f6f7f9; --line:#e7e9ec; --fg:#0e1013; --muted:#6c737d;
+  --accent:#0a66ff; --accent-soft:rgba(10,102,255,.10);
+  --ink:#0e1013; --ink-fg:#ffffff;
+  --good:#00a368; --good-soft:rgba(0,163,104,.12); --bad:#e5484d; --bad-soft:rgba(229,72,77,.12); --warn:#b7730a; --warn-soft:rgba(214,140,20,.14);
+  --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);
+  --f-display:"Inter Tight","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r-card:20px; --r-ctl:12px;
+  color-scheme:light;
 }
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
-  --bg:#eef1f4; --panel:#ffffff; --panel2:#f5f7f9; --line:#d7dee5; --fg:#18222c; --muted:#5d6b78;
-  --accent:#a8670f; --accent-ink:#fff8ec; --good:#1d8a57; --bad:#c0392b; --warn:#9a7a10; color-scheme:light}}
-:root[data-theme="light"]{
-  --bg:#eef1f4; --panel:#ffffff; --panel2:#f5f7f9; --line:#d7dee5; --fg:#18222c; --muted:#5d6b78;
-  --accent:#a8670f; --accent-ink:#fff8ec; --good:#1d8a57; --bad:#c0392b; --warn:#9a7a10; color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000000; --surface:#111214; --surface2:#1a1b1e; --line:#24262a; --fg:#f5f6f7; --muted:#8c929b;
+  --accent:#4d8dff; --accent-soft:rgba(77,141,255,.16); --ink:#ffffff; --ink-fg:#000000;
+  --good:#1fc98a; --good-soft:rgba(31,201,138,.14); --bad:#ff5d61; --bad-soft:rgba(255,93,97,.14); --warn:#f2b441; --warn-soft:rgba(242,180,65,.14);
+  --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#111214; --surface2:#1a1b1e; --line:#24262a; --fg:#f5f6f7; --muted:#8c929b;
+  --accent:#4d8dff; --accent-soft:rgba(77,141,255,.16); --ink:#ffffff; --ink-fg:#000000;
+  --good:#1fc98a; --good-soft:rgba(31,201,138,.14); --bad:#ff5d61; --bad-soft:rgba(255,93,97,.14); --warn:#f2b441; --warn-soft:rgba(242,180,65,.14);
+  --shadow:none; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
-body{background:var(--bg);color:var(--fg);font:14px/1.45 var(--f-body);
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
-.wrap{max-width:1320px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
-.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-h1{font:700 40px/1 var(--f-display);letter-spacing:.08em;margin:0}
-h1 span{color:var(--accent)}
-.sub{font:500 13px var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.btn{font:600 14px var(--f-display);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);
-  background:var(--panel2);color:var(--fg);padding:8px 14px;border-radius:4px;cursor:pointer}
-.btn:hover{border-color:var(--accent)}
-.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.btn:disabled{opacity:.5;cursor:default}
-.btn:focus-visible,input:focus-visible,select:focus-visible,.seg button:focus-visible,tr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 var(--f-body);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1,"cv11" 1;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(20px + env(safe-area-inset-top,0px)) 48px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);border:1px solid var(--line)}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .card{border-color:transparent}}
+:root[data-theme="light"] .card{border-color:transparent}
 
-.status{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.st{display:flex;flex-direction:column;gap:6px;min-width:0}
-.st .lbl{font:600 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
-.st .lbl b{color:var(--fg);font-family:var(--f-mono);font-weight:500;letter-spacing:0;text-transform:none}
-.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+/* header */
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px}
+.brand{display:flex;flex-direction:column;gap:2px}
+h1{font:800 30px/1 var(--f-display);letter-spacing:-.03em;margin:0}
+h1 i{font-style:normal;color:var(--accent)}
+.sub{font-size:13px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 14px var(--f-body);border:0;background:var(--surface2);color:var(--fg);padding:10px 16px;border-radius:999px;cursor:pointer;transition:transform .1s,opacity .15s}
+.card .btn{background:var(--surface2)}
+.btn:hover{opacity:.85}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--ink);color:var(--ink-fg)}
+.btn.blue{background:var(--accent);color:#fff}
+.btn:disabled{opacity:.4;cursor:default;transform:none}
+.btn:focus-visible,input:focus-visible,select:focus-visible,.seg button:focus-visible,tr:focus-visible,.tab:focus-visible,.hl:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* highlights */
+.hls{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.hl{padding:18px 20px;display:flex;flex-direction:column;gap:6px;cursor:pointer;text-align:left;font:inherit;color:inherit;min-width:0}
+.hl .k{font-size:13px;color:var(--muted);font-weight:500}
+.hl .v{font:700 30px/1.05 var(--f-display);letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hl .n{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hl .d{font-size:13px;color:var(--muted)}
+.hl.status{cursor:default;gap:10px}
+.st{display:flex;flex-direction:column;gap:5px;min-width:0}
+.st .lbl{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.st .lbl b{color:var(--fg);font-weight:600}
+.bar{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:2px;transition:width .3s}
 .st .note{font-size:12px;color:var(--muted)}
-.msg{font-size:13px;color:var(--warn)}
+.msg{font-size:14px;color:var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:var(--r-ctl)}
 .msg:empty{display:none}
 
-.controls{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end}
-.ctl{display:flex;flex-direction:column;gap:5px}
-.ctl label,.ctl .lbl{font:600 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-select,input[type=text],input[type=number]{font:14px var(--f-body);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 9px}
-input[type=number]{width:84px;font-family:var(--f-mono)}
+/* tabs as segmented control */
+.tabs{display:inline-flex;gap:4px;background:var(--surface);padding:4px;border-radius:999px;box-shadow:var(--shadow);border:1px solid var(--line);align-self:flex-start;max-width:100%;overflow-x:auto}
+.tab{font:600 15px var(--f-body);background:none;border:0;color:var(--muted);padding:9px 18px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--ink-fg)}
+.tabnote{font-size:14px;color:var(--muted);margin:0;max-width:90ch}
+
+/* controls */
+.panel{padding:16px 18px;display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-end}
+.ctl{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ctl label,.ctl .lbl{font-size:13px;color:var(--muted);font-weight:500}
+select,input[type=text],input[type=number]{font:500 15px var(--f-body);background:var(--surface2);color:var(--fg);border:1px solid transparent;border-radius:var(--r-ctl);padding:9px 12px;min-height:42px}
+select{padding-right:30px}
+select:hover,input:hover{border-color:var(--line)}
+input[type=number]{width:96px}
 input[type=text]{width:220px;max-width:100%}
-.seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;flex-wrap:wrap}
-.seg button{font:600 14px var(--f-display);letter-spacing:.06em;background:var(--panel);color:var(--muted);border:0;border-right:1px solid var(--line);padding:7px 11px;cursor:pointer}
-.seg button:last-child{border-right:0}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+input.isk{width:120px!important}
+.seg{display:inline-flex;gap:2px;background:var(--surface2);padding:3px;border-radius:var(--r-ctl);flex-wrap:wrap}
+.seg button{font:600 14px var(--f-body);background:none;color:var(--muted);border:0;padding:7px 11px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.reset{background:none;border:0;color:var(--accent);font:600 14px var(--f-body);cursor:pointer;padding:10px 4px}
+.catbtn b{font-weight:700;background:var(--accent);color:#fff;border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px}
+.divider{flex-basis:100%;height:0}
+.advbtn{display:none}
+@media (max-width:640px){
+  .panel .adv{display:none} .panel.showadv .adv{display:flex} .panel.showadv .divider.adv{display:block}
+  .advbtn{display:flex} .seg button{padding:7px 9px}
+  .panel .ctl{flex:1 1 calc(50% - 9px)} .panel .ctl select,.panel .ctl input{width:100%!important}
+}
 
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
-.tab{font:700 18px var(--f-display);letter-spacing:.08em;text-transform:uppercase;background:none;border:0;color:var(--muted);
-  padding:8px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
-.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
-.tabnote{font-size:13px;color:var(--muted);margin:0}
-.fees{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
-
-.tablebox{overflow:auto;max-height:calc(100vh - 60px);max-height:calc(100dvh - 60px);background:var(--panel);border:1px solid var(--line);border-radius:6px;overscroll-behavior:contain}
-table{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;min-width:860px}
-th{font:600 12px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:right;
-  padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;background:var(--panel2);position:sticky;top:0;z-index:2}
-th:first-child{left:0;z-index:3}
-td:first-child{position:sticky;left:0;background:var(--panel);z-index:1}
-tbody tr:hover td:first-child{background:var(--panel2)}
-
-/* filters */
-.filters{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:6px}
-.filters input[type=text].isk{width:110px;font-family:var(--f-mono)}
-.ctl .hint{font-size:11px;color:var(--muted)}
-.catbtn{display:inline-flex;align-items:center;gap:8px}
-.catbtn b{font-family:var(--f-mono);font-weight:500;background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:0 6px;font-size:12px}
-.reset{background:none;border:0;color:var(--accent);font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:8px 4px}
-
-.catpanel{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;max-height:min(70vh,640px)}
-.cathead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
-.cathead strong{font:700 18px var(--f-display);letter-spacing:.08em;text-transform:uppercase}
-.cathead .actions{gap:6px}
-.cathead .btn{padding:6px 10px;font-size:13px}
-.catgrid{overflow-y:auto;padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;align-items:start}
-.cat{border:1px solid var(--line);border-radius:5px;background:var(--panel2);min-width:0}
-.cat > .row{display:flex;align-items:center;gap:8px;padding:8px 10px}
-.cat > .row label{flex:1;min-width:0;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
-.cat .count{font:12px var(--f-mono);color:var(--muted)}
-.cat .toggle{background:none;border:0;color:var(--muted);cursor:pointer;font:600 16px var(--f-mono);width:24px;height:24px;border-radius:3px}
+/* categories */
+.catpanel{display:flex;flex-direction:column;max-height:min(70vh,640px);overflow:hidden}
+.cathead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+.cathead strong{font:700 18px var(--f-display);letter-spacing:-.01em}
+.catgrid{overflow-y:auto;padding:14px 18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;align-items:start}
+.cat{border-radius:14px;background:var(--surface2);min-width:0}
+.cat > .row{display:flex;align-items:center;gap:8px;padding:10px 12px}
+.cat > .row label{flex:1;min-width:0;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px}
+.cat .count{font-size:12px;color:var(--muted)}
+.cat .toggle{background:none;border:0;color:var(--muted);cursor:pointer;font:600 18px var(--f-body);width:28px;height:28px;border-radius:8px}
 .cat .toggle:hover{color:var(--fg);background:var(--line)}
-.subs{display:flex;flex-direction:column;padding:0 10px 8px 30px;gap:2px}
-.subs label{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:2px 0}
+.subs{display:flex;flex-direction:column;padding:0 12px 10px 38px;gap:4px}
+.subs label{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;padding:2px 0}
 .subs label span:first-of-type{flex:1;min-width:0}
-input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;margin:0;flex:none}
-.catnote{padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px;margin:0;flex:none}
+.catnote{padding:12px 18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 
-/* chart */
-.chartbox{position:relative;touch-action:pan-y}
-.tip{position:absolute;pointer-events:none;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:8px 10px;
-  font:12px/1.5 var(--f-mono);box-shadow:0 6px 18px rgba(0,0,0,.3);min-width:170px;z-index:2}
-.tip .d{font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
-.tip div{display:flex;justify-content:space-between;gap:14px}
-.tip span{color:var(--muted)}
-.catpath{display:block;font-size:12px;color:var(--muted);margin-top:1px}
-
-/* advice pills */
-.pill{display:inline-block;font:600 12px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
-.pill.good{color:var(--good)} .pill.bad{color:var(--bad)} .pill.warn{color:var(--warn)} .pill.neutral{color:var(--muted)}
-.hubtag{font:600 13px var(--f-display);letter-spacing:.06em;text-transform:uppercase}
-
-/* hub tools */
-.hubctl{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:6px}
-.plan{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:12px}
-.plan h3{font:700 20px var(--f-display);letter-spacing:.06em;text-transform:uppercase;margin:0}
-.plan .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.plan .summary div{display:flex;flex-direction:column;gap:2px;background:var(--panel2);border-radius:5px;padding:8px 10px}
-.plan .summary span{font:600 11px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.plan .summary b{font:500 16px var(--f-mono)}
-.plan .others{font-size:13px;color:var(--muted)}
-.plan table{min-width:640px}
-.plan .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:5px}
-.plan td:first-child{position:static}
-
-/* drawer extras */
-.dsec{display:flex;flex-direction:column;gap:8px}
-.dsec h3{font:700 16px var(--f-display);letter-spacing:.1em;text-transform:uppercase;margin:0;color:var(--muted)}
-.advice{display:flex;flex-direction:column;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:12px}
-.advice .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.advice .head strong{font:600 14px var(--f-body)}
-.advice ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13px}
-.hubs{overflow-x:auto;border:1px solid var(--line);border-radius:5px}
-.hubs table{min-width:440px}
-.hubs td,.hubs th{padding:6px 10px;position:static}
-.hubs td:first-child{min-width:0;font-family:var(--f-display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
-.hubs tr.best td{color:var(--good)}
+/* list */
+.tablebox{overflow:auto;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overscroll-behavior:contain;padding:4px 6px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;min-width:900px}
+th{font:500 13px var(--f-body);color:var(--muted);text-align:right;padding:12px 12px;white-space:nowrap;cursor:pointer;user-select:none;
+  background:var(--surface);position:sticky;top:0;z-index:2;border-bottom:1px solid var(--line)}
 th:first-child,td:first-child{text-align:left}
-th[aria-sort] ::after{content:""}
-th.sorted{color:var(--accent)}
-td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--f-mono);font-size:13px;white-space:nowrap}
-td:first-child{font-family:var(--f-body);font-size:14px;white-space:normal;min-width:200px}
+th:first-child{left:0;z-index:3}
+th.sorted{color:var(--fg);font-weight:600}
+td{padding:12px 12px;text-align:right;font-size:14px;font-weight:500;white-space:nowrap;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{white-space:normal;min-width:220px;position:sticky;left:0;background:var(--surface);z-index:1}
 tbody tr{cursor:pointer}
-tbody tr:hover{background:var(--panel2)}
+tbody tr:hover td{background:var(--surface2)}
+.iname{font-weight:600;font-size:15px}
+.catpath{display:block;font-size:12px;color:var(--muted);margin-top:2px;font-weight:400}
 .pos{color:var(--good)} .neg{color:var(--bad)} .dim{color:var(--muted)}
-.deal{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
-.deal .track{width:60px;height:6px;background:var(--line);border-radius:3px;overflow:hidden;display:inline-block}
-.deal .track i{display:block;height:100%;background:var(--good)}
-.flag{font:600 11px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--warn);border:1px solid currentColor;border-radius:3px;padding:0 5px;margin-left:6px;white-space:nowrap}
-.empty{padding:40px 16px;text-align:center;color:var(--muted)}
-.empty strong{display:block;color:var(--fg);font:600 20px var(--f-display);letter-spacing:.06em;margin-bottom:6px}
+.chip{display:inline-block;padding:4px 9px;border-radius:999px;font-weight:600;font-size:13px}
+.chip.pos{background:var(--good-soft)} .chip.neg{background:var(--bad-soft)} .chip.dim{background:var(--surface2)}
+.flag{font-size:11px;font-weight:600;color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:2px 7px;margin-left:6px;white-space:nowrap;vertical-align:1px}
+.pill{display:inline-block;font:600 12px var(--f-body);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.pill.good{color:var(--good);background:var(--good-soft)} .pill.bad{color:var(--bad);background:var(--bad-soft)} .pill.warn{color:var(--warn);background:var(--warn-soft)} .pill.neutral{color:var(--muted);background:var(--surface2)}
+.hubtag{font-weight:600}
+.hubtag small{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.fill{display:inline-flex;align-items:center;gap:8px}
+.fill .track{width:48px;height:6px;border-radius:3px;background:var(--surface2);overflow:hidden}
+.fill .track i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.empty{padding:48px 16px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--fg);font:700 20px var(--f-display);margin-bottom:6px}
 .more{display:flex;justify-content:center;padding:12px}
 
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--panel);border-left:1px solid var(--line);
-  box-shadow:-20px 0 40px rgba(0,0,0,.35);transform:translateX(105%);transition:transform .25s;z-index:20;overflow-y:auto;
-  padding:calc(18px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) 18px;
-  display:flex;flex-direction:column;gap:16px}
+/* plan */
+.plan{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.plan h3{font:700 22px/1.2 var(--f-display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+.plan .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.plan .summary div{display:flex;flex-direction:column;gap:2px;background:var(--surface2);border-radius:14px;padding:12px 14px}
+.plan .summary span{font-size:12px;color:var(--muted);font-weight:500}
+.plan .summary b{font:700 20px var(--f-display);letter-spacing:-.01em}
+.plan .others{font-size:13px;color:var(--muted)}
+.plan .tbl{overflow-x:auto;border-radius:14px;background:var(--surface2);padding:2px 6px}
+.plan table{min-width:640px}
+.plan th,.plan td:first-child{background:var(--surface2);position:static}
+.plan tbody tr:hover td{background:var(--surface)}
+.risk{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);color:var(--fg);border-radius:14px;padding:12px 14px;font-size:14px}
+.risk b{color:var(--warn)}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:19}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--surface);border-left:1px solid var(--line);
+  transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);z-index:20;overflow-y:auto;
+  padding:calc(20px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 20px;
+  display:flex;flex-direction:column;gap:18px}
 .drawer.open{transform:none}
-.drawer h2{font:700 26px/1.1 var(--f-display);letter-spacing:.04em;margin:0;text-wrap:balance}
+.drawer h2{font:800 26px/1.1 var(--f-display);letter-spacing:-.02em;margin:0;text-wrap:balance}
 .dhead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
-.kv div{display:flex;flex-direction:column;gap:2px}
-.kv span{font:600 11px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.kv b{font:500 15px var(--f-mono)}
+.dprice{display:flex;flex-direction:column;gap:2px}
+.dprice .big{font:800 36px/1 var(--f-display);letter-spacing:-.03em}
+.dprice .chg{font-size:15px;font-weight:600}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:14px;overflow:hidden}
+.kv div{display:flex;flex-direction:column;gap:2px;background:var(--surface2);padding:10px 12px}
+.kv span{font-size:12px;color:var(--muted)}
+.kv b{font-weight:600;font-size:15px}
+.dsec{display:flex;flex-direction:column;gap:10px}
+.dsec h3{font:700 17px var(--f-display);margin:0}
+.advice{display:flex;flex-direction:column;gap:10px;background:var(--surface2);border-radius:14px;padding:14px}
+.advice .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.advice .head strong{font-weight:600;font-size:14px}
+.advice ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--fg)}
+.hubs{overflow-x:auto;border-radius:14px;background:var(--surface2);padding:2px 6px}
+.hubs table{min-width:440px}
+.hubs td,.hubs th{padding:9px 10px;position:static;background:var(--surface2)}
+.hubs td:first-child{min-width:0;font-weight:600}
+.hubs tr.best td{color:var(--good)}
+.hubs tbody tr{cursor:default}
 canvas{width:100%;height:240px;display:block}
+.chartbox{position:relative;touch-action:pan-y}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--ink-fg);border-radius:12px;padding:10px 12px;
+  font:500 12px/1.55 var(--f-body);min-width:180px;z-index:2;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.tip .d{font-weight:700;font-size:13px;margin-bottom:2px}
+.tip div{display:flex;justify-content:space-between;gap:14px}
+.tip span{opacity:.65}
+.tip .pos,.tip .neg{color:inherit}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
-.links{display:flex;gap:12px;flex-wrap:wrap}
-.links a{color:var(--accent)}
-footer{font-size:12px;color:var(--muted);max-width:75ch}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+.links{display:flex;gap:14px;flex-wrap:wrap;font-size:14px}
+.links a{color:var(--accent);text-decoration:none;font-weight:600}
+footer{font-size:12px;color:var(--muted);max-width:80ch;line-height:1.55}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
-@media (max-width:560px){h1{font-size:32px} input[type=text]{width:100%}}
+@media (max-width:640px){
+  h1{font-size:26px} input[type=text]{width:100%} .hl .v{font-size:26px}
+  .drawer{top:auto;width:100%;max-height:92vh;max-height:92dvh;border-left:0;border-radius:22px 22px 0 0;transform:translateY(105%)}
+  .drawer.open{transform:none}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><h1>SEIS<span>ME</span></h1><div class="sub">Scanner de marché · Jita · Amarr · Dodixie · Rens · Hek</div></div>
+    <div class="brand"><h1>SEIS<i>ME</i></h1><div class="sub">Marché EVE Online · Jita, Amarr, Dodixie, Rens, Hek</div></div>
     <div class="actions">
       <button class="btn primary" id="btnScan" type="button">Lancer l'analyse</button>
-      <button class="btn" id="btnStop" type="button" disabled>Arrêter</button>
       <button class="btn" id="btnOrders" type="button" title="Recharge seulement les ordres (prix actuels)">Actualiser les prix</button>
+      <button class="btn" id="btnStop" type="button" disabled>Arrêter</button>
     </div>
   </header>
 
-  <section class="status" aria-live="polite">
-    <div class="st"><div class="lbl">Ordres des 5 hubs <b id="sOrders">—</b></div><div class="bar"><i id="bOrders"></i></div><div class="note" id="nOrders">Pas encore chargés</div></div>
-    <div class="st"><div class="lbl">Noms des objets <b id="sNames">—</b></div><div class="bar"><i id="bNames"></i></div><div class="note" id="nNames">En cache après le premier passage</div></div>
-    <div class="st"><div class="lbl">Historique <b id="sHist">—</b></div><div class="bar"><i id="bHist"></i></div><div class="note" id="nHist">Limité par CCP à ~300 objets/minute, mis en cache jusqu'au prochain downtime</div></div>
+  <section class="hls">
+    <button class="card hl" id="hlBuy" type="button"><span class="k">Meilleure affaire</span><span class="v dim">—</span><span class="n">En attente des données</span><span class="d"></span></button>
+    <button class="card hl" id="hlImport" type="button"><span class="k">Meilleur voyage</span><span class="v dim">—</span><span class="n">En attente des données</span><span class="d"></span></button>
+    <div class="card hl status" aria-live="polite">
+      <div class="st"><div class="lbl">Ordres des 5 hubs <b id="sOrders">—</b></div><div class="bar"><i id="bOrders"></i></div><div class="note" id="nOrders">Pas encore chargés</div></div>
+      <div class="st"><div class="lbl">Noms et catégories <b id="sNames">—</b></div><div class="bar"><i id="bNames"></i></div><div class="note" id="nNames">En cache après le premier passage</div></div>
+      <div class="st"><div class="lbl">Historique de Jita <b id="sHist">—</b></div><div class="bar"><i id="bHist"></i></div><div class="note" id="nHist">~300 objets par minute, gardé jusqu'au downtime</div></div>
+    </div>
   </section>
   <div class="msg" id="msg"></div>
 
-  <section class="controls">
-    <div class="ctl"><span class="lbl">Période de référence</span>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabBuy" aria-selected="true" type="button">Bonnes affaires</button>
+    <button class="tab" role="tab" id="tabHub" aria-selected="false" type="button">Transport</button>
+    <button class="tab" role="tab" id="tabTrade" aria-selected="false" type="button">Trading Jita</button>
+  </div>
+
+  <section class="card panel" id="mainPanel" aria-label="Réglages">
+    <div class="ctl"><span class="lbl">Moyenne de référence</span>
       <div class="seg" id="segPeriod">
         <button type="button" data-d="1">Hier</button><button type="button" data-d="7">7 j</button><button type="button" data-d="14">14 j</button>
-        <button type="button" data-d="30">30 j</button><button type="button" data-d="90">3 mois</button><button type="button" data-d="180">6 mois</button><button type="button" data-d="365">1 an</button>
+        <button type="button" data-d="30">30 j</button><button type="button" data-d="90">3 m</button><button type="button" data-d="180">6 m</button><button type="button" data-d="365">1 an</button>
       </div>
     </div>
-    <div class="ctl"><label for="selVol">Volume min. / jour</label>
-      <select id="selVol"><option value="0">Aucun</option><option value="5e6">5 M ISK</option><option value="2e7">20 M ISK</option><option value="1e8">100 M ISK</option><option value="5e8">500 M ISK</option><option value="2e9">2 Md ISK</option></select>
-    </div>
-    <div class="ctl"><label for="selDays">Jours actifs min.</label>
-      <select id="selDays"><option value="0">Aucun</option><option value="0.5">50 % de la période</option><option value="0.8">80 % de la période</option><option value="1">Tous les jours</option></select>
-    </div>
-    <div class="ctl"><label for="selScope">Objets analysés</label>
-      <select id="selScope"><option value="1000">Les 1 000 plus actifs (~4 min)</option><option value="3000">Les 3 000 plus actifs (~12 min)</option><option value="999999">Tous (~35 min la 1re fois)</option></select>
+    <div class="ctl" id="ctlBHub"><label for="bHub">Acheter à</label>
+      <select id="bHub"><option value="all">Tous les hubs</option></select>
     </div>
     <div class="ctl"><label for="q">Rechercher</label><input type="text" id="q" placeholder="Tritanium, PLEX, Gila…" autocomplete="off"></div>
-  </section>
-
-  <section class="filters" aria-label="Filtres">
+    <div class="ctl advbtn"><span class="lbl">Filtres</span><button class="btn" id="btnAdv" type="button" aria-expanded="false">Plus de filtres</button></div>
     <div class="ctl"><span class="lbl">Catégories</span><button class="btn catbtn" id="btnCats" type="button" aria-expanded="false" aria-controls="catPanel">Toutes</button></div>
-    <div class="ctl"><label for="fPriceMin">Prix de vente min.</label><input type="text" class="isk" id="fPriceMin" placeholder="ex. 1m" title="En ISK, k / m / b acceptés : 500k, 1m, 1.5b" autocomplete="off" inputmode="decimal"></div>
-    <div class="ctl"><label for="fPriceMax">Prix de vente max.</label><input type="text" class="isk" id="fPriceMax" placeholder="ex. 500m" title="En ISK, k / m / b acceptés : 500k, 1m, 1.5b" autocomplete="off" inputmode="decimal"></div>
-    <div class="ctl"><label for="fQtyMin">Qté dispo min.</label><input type="number" id="fQtyMin" min="0" step="1" placeholder="0"></div>
-    <div class="ctl" id="ctlDisc"><label for="fDiscMin">Sous la moyenne min. %</label><input type="number" id="fDiscMin" step="1" placeholder="0"></div>
-    <div class="ctl"><label for="fOrdersMin">Ordres de vente min.</label><input type="number" id="fOrdersMin" min="0" step="1" placeholder="0"></div>
-    <div class="ctl"><button class="reset" id="btnReset" type="button">Réinitialiser</button></div>
+    <div class="divider adv"></div>
+    <div class="ctl adv"><label for="selVol">Échangé min. / jour</label>
+      <select id="selVol"><option value="0">Aucun</option><option value="5e6">5 M ISK</option><option value="2e7">20 M ISK</option><option value="1e8">100 M ISK</option><option value="5e8">500 M ISK</option><option value="2e9">2 Md ISK</option></select>
+    </div>
+    <div class="ctl adv"><label for="selDays">Jours actifs min.</label>
+      <select id="selDays"><option value="0">Aucun</option><option value="0.5">50 % de la période</option><option value="0.8">80 % de la période</option><option value="1">Tous les jours</option></select>
+    </div>
+    <div class="ctl adv"><label for="fPriceMin">Prix min.</label><input type="text" class="isk" id="fPriceMin" placeholder="ex. 1m" title="En ISK, k / m / b acceptés : 500k, 1m, 1.5b" autocomplete="off" inputmode="decimal"></div>
+    <div class="ctl adv"><label for="fPriceMax">Prix max.</label><input type="text" class="isk" id="fPriceMax" placeholder="ex. 500m" title="En ISK, k / m / b acceptés : 500k, 1m, 1.5b" autocomplete="off" inputmode="decimal"></div>
+    <div class="ctl adv"><label for="fQtyMin">Qté dispo min.</label><input type="number" id="fQtyMin" min="0" step="1" placeholder="0"></div>
+    <div class="ctl adv" id="ctlDisc"><label for="fDiscMin">Sous la moyenne min. %</label><input type="number" id="fDiscMin" step="1" placeholder="0"></div>
+    <div class="ctl adv"><label for="fOrdersMin">Ordres de vente min.</label><input type="number" id="fOrdersMin" min="0" step="1" placeholder="0"></div>
+    <div class="ctl adv"><label for="selScope">Objets analysés</label>
+      <select id="selScope"><option value="1000">1 000 plus actifs (~4 min)</option><option value="3000">3 000 plus actifs (~12 min)</option><option value="999999">Tous (~35 min la 1re fois)</option></select>
+    </div>
+    <div class="ctl adv"><button class="reset" id="btnReset" type="button">Réinitialiser</button></div>
   </section>
 
-  <section class="catpanel" id="catPanel" hidden>
+  <section class="card catpanel" id="catPanel" hidden>
     <div class="cathead"><strong>Catégories du marché</strong>
       <div class="actions"><button class="btn" id="catAll" type="button">Tout cocher</button><button class="btn" id="catNone" type="button">Tout décocher</button><button class="btn primary" id="catClose" type="button">Valider</button></div>
     </div>
@@ -235,48 +283,47 @@ footer{font-size:12px;color:var(--muted);max-width:75ch}
     <div class="catnote">Même classement que le marché en jeu. Le chiffre indique le nombre d'objets en vente à Jita dans chaque catégorie.</div>
   </section>
 
-  <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tabBuy" aria-selected="true" type="button">Bonnes affaires</button>
-    <button class="tab" role="tab" id="tabTrade" aria-selected="false" type="button">Trading</button>
-    <button class="tab" role="tab" id="tabHub" aria-selected="false" type="button">Inter-hubs</button>
-  </div>
-  <p class="tabnote" id="tabNote"></p>
-  <div class="fees" id="fees" hidden>
+  <section class="card panel" id="hubCtl" hidden aria-label="Transport">
+    <div class="ctl"><label for="hShip">Vaisseau</label><select id="hShip"></select></div>
+    <div class="ctl"><label for="hCargo">Soute (m³)</label><input type="number" id="hCargo" min="1" step="100"></div>
+    <div class="ctl"><label for="hSrc">Acheter à</label><select id="hSrc"><option value="all">Tous les autres hubs</option></select></div>
+    <div class="ctl"><label for="hDst">Revendre à</label><select id="hDst"></select></div>
+    <div class="ctl"><label for="hMode">Revente</label><select id="hMode"><option value="order">Ordre de vente</option><option value="instant">Vente immédiate</option></select></div>
+    <div class="divider"></div>
+    <div class="ctl"><label for="hProfitMin">Profit min. / voyage</label><input type="text" class="isk" id="hProfitMin" placeholder="ex. 5m" autocomplete="off"></div>
+    <div class="ctl"><label for="hBudget">Budget</label><input type="text" class="isk" id="hBudget" placeholder="ex. 500m" autocomplete="off"></div>
+    <div class="ctl"><button class="btn blue" id="btnPlan" type="button">Composer le meilleur chargement</button></div>
+  </section>
+  <section class="card panel" id="fees" hidden aria-label="Frais">
     <div class="ctl"><label for="fTax">Taxe de vente %</label><input type="number" id="fTax" step="0.01" min="0" value="3.37"></div>
     <div class="ctl"><label for="fBroker">Frais de courtage %</label><input type="number" id="fBroker" step="0.01" min="0" value="1.50"></div>
     <div class="ctl"><label for="fMin">Marge nette min. %</label><input type="number" id="fMin" step="1" value="5"></div>
-  </div>
-  <section class="hubctl" id="hubCtl" hidden>
-    <div class="ctl"><label for="hSrc">Acheter à</label><select id="hSrc"><option value="all">Tous les autres hubs</option></select></div>
-    <div class="ctl"><label for="hDst">Revendre à</label><select id="hDst"></select></div>
-    <div class="ctl"><label for="hMode">Revente</label><select id="hMode"><option value="order">Ordre de vente (meilleur prix)</option><option value="instant">Vente immédiate aux ordres d'achat</option></select></div>
-    <div class="ctl"><label for="hProfitMin">Profit total min.</label><input type="text" class="isk" id="hProfitMin" placeholder="ex. 5m" autocomplete="off"></div>
-    <div class="ctl"><label for="hBudget">Budget</label><input type="text" class="isk" id="hBudget" placeholder="ex. 500m" autocomplete="off"></div>
-    <div class="ctl"><label for="hCargo">Soute (m³)</label><input type="number" id="hCargo" min="0" step="100" placeholder="ex. 5000"></div>
-    <div class="ctl"><button class="btn primary" id="btnPlan" type="button">Meilleur chargement</button></div>
   </section>
-  <section class="plan" id="plan" hidden></section>
+  <section class="card plan" id="plan" hidden></section>
 
-  <div class="tablebox"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
-    <div class="empty" id="empty"><strong>Aucune donnée pour l'instant</strong>Clique sur « Lancer l'analyse ». Les premiers résultats apparaissent dès que l'historique arrive, pendant que le reste se charge.</div>
+  <p class="tabnote" id="tabNote"></p>
+  <div class="card tablebox"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+    <div class="empty" id="empty"><strong>Aucune donnée pour l'instant</strong>Clique sur « Lancer l'analyse ». Les premiers résultats apparaissent dès que l'historique arrive.</div>
     <div class="more" id="moreBox" hidden><button class="btn" id="btnMore" type="button">Afficher 200 de plus</button></div>
   </div>
 
-  <footer>Données : API officielle ESI de CCP (ordres des stations Jita IV-4, Amarr VIII, Dodixie IX-20, Rens VI-8 et Hek VIII-12, historique journalier de The Forge). Les conseils sont des estimations calculées à partir de l'historique de Jita, pas des garanties. Les prix actuels sont mis en cache 5 minutes par CCP, l'historique se met à jour une fois par jour après le downtime. « Moyenne » = prix moyen pondéré par le volume sur la période choisie. Un gros écart sur un objet peu échangé peut être un piège ou une erreur de saisie : vérifie en jeu avant d'acheter.</footer>
+  <footer>Données : API officielle ESI de CCP (ordres des stations Jita IV-4, Amarr VIII, Dodixie IX-20, Rens VI-8 et Hek VIII-12, historique journalier de The Forge). « Moyenne » = prix moyen pondéré par le volume à Jita sur la période choisie, utilisé comme référence pour tous les hubs. Les conseils sont des estimations tirées de l'historique, pas des garanties. Vérifie toujours les prix en jeu avant d'acheter.</footer>
 </div>
 
+<div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true">
   <div class="dhead"><h2 id="dName">—</h2><button class="btn" id="dClose" type="button">Fermer</button></div>
-  <div class="actions"><button class="btn" id="dCopy" type="button">Copier le nom</button></div>
-  <div class="dsec"><h3>Conseil</h3><div class="advice" id="dAdvice"></div></div>
-  <div class="kv" id="dKv"></div>
-  <div class="dsec"><h3>Prix dans les hubs</h3><div class="hubs"><table><thead><tr><th>Hub</th><th>Vente min.</th><th>Qté</th><th>Achat max.</th><th>Vente vs Jita</th><th>Sauts</th></tr></thead><tbody id="dHubs"></tbody></table></div></div>
+  <div class="dprice" id="dPrice"></div>
   <div class="seg" id="segChart" aria-label="Période du graphique">
-    <button type="button" data-d="7">7 j</button><button type="button" data-d="14">14 j</button><button type="button" data-d="30">30 j</button>
-    <button type="button" data-d="90">3 mois</button><button type="button" data-d="180">6 mois</button><button type="button" data-d="365">1 an</button><button type="button" data-d="9999">Tout</button>
+    <button type="button" data-d="7">7 j</button><button type="button" data-d="14">14 j</button><button type="button" data-d="30">1 m</button>
+    <button type="button" data-d="90">3 m</button><button type="button" data-d="180">6 m</button><button type="button" data-d="365">1 an</button><button type="button" data-d="9999">Max</button>
   </div>
   <div class="chartbox" id="chartBox"><canvas id="chart" width="1040" height="480"></canvas><div class="tip" id="tip" hidden></div></div>
-  <div class="legend"><span><i style="background:var(--accent)"></i>Prix moyen journalier</span><span><i style="background:var(--accent);opacity:.25;height:8px"></i>Plus bas / plus haut du jour</span><span><i style="background:var(--muted)"></i>Moyenne du graphique</span><span><i style="background:var(--good)"></i>Vente la moins chère actuelle</span><span><i style="background:var(--bad)"></i>Meilleur achat actuel</span></div>
+  <div class="legend"><span><i id="lgLine" style="background:var(--good)"></i>Prix moyen à Jita</span><span><i style="background:var(--muted)"></i>Moyenne de la période</span><span><i style="background:var(--accent)"></i>Vente la moins chère</span><span><i style="background:var(--warn)"></i>Meilleur achat</span></div>
+  <div class="actions"><button class="btn" id="dCopy" type="button">Copier le nom</button></div>
+  <div class="dsec"><h3>Conseil</h3><div class="advice" id="dAdvice"></div></div>
+  <div class="dsec"><h3>Prix dans les hubs</h3><div class="hubs"><table><thead><tr><th>Hub</th><th>Vente min.</th><th>Qté</th><th>Achat max.</th><th>vs Jita</th><th>Sauts</th></tr></thead><tbody id="dHubs"></tbody></table></div></div>
+  <div class="dsec"><h3>Jita en détail</h3><div class="kv" id="dKv"></div></div>
   <div class="links" id="dLinks"></div>
 </aside>
 
@@ -293,6 +340,16 @@ const HUBS = [
   { k: "hek", n: "Hek", st: 60005686, reg: 10000042, sys: 30002053 }
 ];
 const HUB = Object.fromEntries(HUBS.map(h => [h.k, h]));
+// typical cargo with skills and cargo rigs/expanders; `risk` = cargo value above which high-sec ganks become likely
+const SHIPS = [
+  { k: "frig", n: "Frégate / navette", m3: 400, risk: 5e7 },
+  { k: "ind", n: "Industriel T1 (Badger, Iteron V…)", m3: 12000, risk: 3e8 },
+  { k: "br", n: "Blockade Runner (Prowler, Viator…)", m3: 10000, risk: 5e9 },
+  { k: "dst", n: "Deep Space Transport (Impel, Occator…)", m3: 62000, risk: 2e9 },
+  { k: "frt", n: "Cargo lourd (Charon, Obelisk…)", m3: 900000, risk: 3e9 },
+  { k: "custom", n: "Personnalisé", m3: null, risk: null }
+];
+const SHIP = Object.fromEntries(SHIPS.map(x => [x.k, x]));
 const HIST_INTERVAL = 220; // ms between history requests (~270/min, under CCP's 300/min)
 const $ = id => document.getElementById(id);
 
@@ -351,7 +408,7 @@ const S = {
   running: false, stop: false,
   tab: "buy",
   period: LS.get("period", 30),
-  sort: { buy: { k: "disc", dir: -1 }, trade: { k: "margin", dir: -1 }, hub: { k: "profit", dir: -1 } },
+  sort: { buy: { k: "disc", dir: -1 }, trade: { k: "margin", dir: -1 }, hub: { k: "tripProfit", dir: -1 } },
   shown: 200,
   rows: [], selected: null,
   groups: null,        // {id: {n: name, p: parentId, types: [...]}}
@@ -535,7 +592,7 @@ async function loadGroups(){
     const root = c[0], sub = c[1] || c[0];
     for (const t of G[id].types) S.typeCat.set(t, [root, sub]);
   }
-  $("nNames").textContent = "Noms et catégories à jour";
+  $("nNames").textContent = "À jour";
   buildCatPanel();
 }
 
@@ -608,8 +665,10 @@ async function ensureVols(ids){
   ids.forEach(id => { if (!S.vols.has(id)) volQueue.add(id); });
   if (volRunning || !volQueue.size) return;
   volRunning = true;
+  let n = 0, last = Date.now();
   const worker = async () => {
     while (volQueue.size){
+      if (++n % 25 === 0 && Date.now() - last > 2500){ last = Date.now(); render(); }
       const id = volQueue.values().next().value; volQueue.delete(id);
       try{
         const t = (await getJSON(`${ESI}/universe/types/${id}/?datasource=tranquility`)).data;
@@ -636,9 +695,12 @@ function marketStats(id){
   return { a30: s30.avg, a7: s7.avg, dv: s30.dailyVol, days: s30.daysActive, vol: m ? sd / m : 0, trend: s30.avg ? s7.avg / s30.avg - 1 : 0 };
 }
 // Should I buy at Jita right now?
-function adviseBuy(id){
-  const o = S.orders.get(id), st = marketStats(id);
-  if (!o || !o.sell) return { tag: "Pas en vente", cls: "neutral", lines: ["Aucun ordre de vente à Jita en ce moment."] };
+function adviseBuy(id, price, hubK, qtyAt){
+  const jo = S.orders.get(id) || {}, st = marketStats(id);
+  if (price == null){ price = jo.sell; hubK = "jita"; qtyAt = jo.sellQty; }
+  const o = { sell: price, sellQty: qtyAt || 0 };
+  const where = hubK && hubK !== "jita" ? ` à ${HUB[hubK].n}` : "";
+  if (!o.sell) return { tag: "Pas en vente", cls: "neutral", lines: ["Aucun ordre de vente en ce moment."] };
   if (!st) return { tag: "Données ?", cls: "neutral", lines: ["Pas assez d'historique pour juger ce prix."] };
   const lines = [], thr = Math.max(0.05, 1.5 * st.vol), disc = (st.a30 - o.sell) / st.a30;
   const band = `le prix varie en général de ±${(st.vol * 100).toFixed(0)} % autour de sa moyenne`;
@@ -646,7 +708,8 @@ function adviseBuy(id){
   let tag, cls;
   if (disc >= thr){
     tag = "Acheter"; cls = "good";
-    lines.push(`La vente la moins chère est ${fmtPct(disc, false)} sous la moyenne 30 j, alors que ${band} : c'est inhabituellement bas.`);
+    lines.push(`La vente la moins chère${where} est ${fmtPct(disc, false)} sous la moyenne 30 j de Jita, alors que ${band} : c'est inhabituellement bas.`);
+    if (where && jo.sell) lines.push(`À Jita, le même objet est à ${fmtIsk(jo.sell)} : ${jo.sell > o.sell ? "l'écart couvre-t-il le trajet de " + (jumps("jita", hubK) ?? "?") + " sauts ? Regarde l'onglet Transport." : "pas d'intérêt à faire le trajet."}`);
     if (st.trend < -Math.max(0.03, st.vol)){ tag = "Acheter prudemment"; cls = "warn"; lines.push(`Mais le prix baisse depuis une semaine (${fmtPct(st.trend)} sur 7 j par rapport à 30 j) : il peut encore descendre.`); }
     if (o.sellQty * o.sell < st.a30 * st.dv * 0.02) lines.push("La quantité à ce prix est faible : ça peut être un seul vendeur pressé, il faudra être rapide.");
   } else if (disc > 0){
@@ -654,7 +717,7 @@ function adviseBuy(id){
     lines.push(`${fmtPct(disc, false)} sous la moyenne 30 j, ce qui reste dans la variation normale (${band}).`);
   } else {
     tag = "Cher"; cls = "bad";
-    lines.push(`La vente la moins chère est ${fmtPct(-disc, false)} au-dessus de la moyenne 30 j.`);
+    lines.push(`La vente la moins chère${where} est ${fmtPct(-disc, false)} au-dessus de la moyenne 30 j de Jita.`);
     if (st.trend > Math.max(0.03, st.vol)) lines.push(`Le prix monte depuis une semaine (${fmtPct(st.trend)}) : si tu en as, c'est plutôt le moment de vendre.`);
   }
   return { tag, cls, lines };
@@ -789,7 +852,7 @@ async function loadHistory(){
   }
   while (inflight > 0) await sleep(100);
   upd();
-  if (!S.stop){ $("sHist").textContent = `${ranked.length.toLocaleString("fr-FR")} objets`; $("nHist").textContent = "Historique à jour jusqu'au prochain downtime (13 h 15 heure de Paris)"; }
+  if (!S.stop){ $("sHist").textContent = `${ranked.length.toLocaleString("fr-FR")} objets`; $("nHist").textContent = "À jour jusqu'au downtime de 13 h 15"; }
 }
 
 /* ---------- stats ---------- */
@@ -810,35 +873,100 @@ function hubOpts(){
     profitMin: parseIsk($("hProfitMin").value) || 0
   };
 }
-function computeHubRows(){
+function cargoNow(){ const sh = SHIP[$("hShip").value] || SHIP.ind; return +$("hCargo").value || sh.m3 || 12000; }
+function hubRawRows(){
   const dst = $("hDst").value, srcSel = $("hSrc").value;
   const srcList = srcSel === "all" ? HUBS.map(h => h.k) : [srcSel];
+  return hubRowsFor(srcList, dst, { ...hubOpts(), profitMin: 0, allPairs: true });
+}
+function tripOf(r, cargo, budget, dst){
+  const v = S.vols.get(r.id), uc = r.cost / r.units;
+  const fit = v ? Math.floor(cargo / v) : null;
+  const tripUnits = v ? Math.max(0, Math.min(r.units, fit, Math.floor(budget / uc))) : null;
+  const tripProfit = tripUnits != null ? tripUnits * r.unitProfit : null;
+  const tripCost = tripUnits != null ? tripUnits * uc : null;
+  const route = (jumps("jita", r.src) ?? null) != null && jumps(r.src, dst) != null ? jumps("jita", r.src) + jumps(r.src, dst) : null;
+  return { v, fit, tripUnits, tripProfit, tripCost, tooBig: fit === 0, fill: v && tripUnits != null ? tripUnits * v / cargo : null,
+    pm3: v ? r.unitProfit / v : null, route, ppj: tripProfit != null && route ? tripProfit / route : tripProfit };
+}
+function computeHubRows(){
+  const dst = $("hDst").value, cargo = cargoNow(), budget = parseIsk($("hBudget").value) || Infinity;
+  const minTrip = parseIsk($("hProfitMin").value) || 0;
+  const ship = SHIP[$("hShip").value] || SHIP.ind;
   const q = $("q").value.trim().toLowerCase();
-  const rows = hubRowsFor(srcList, dst, hubOpts()).map(r => {
-    const name = S.names.get(r.id) || ("#" + r.id);
-    const j = jumps(r.src, dst), v = S.vols.get(r.id);
-    const adv = dst === "jita" ? adviseSell(r.id, r.units) : null;
-    return { ...r, name, jumps: j ?? null, m3: v != null ? v * r.units : null, ppj: j ? r.profit / j : r.profit, adv, advTag: adv ? adv.tag : "" };
-  }).filter(r => !q || r.name.toLowerCase().includes(q));
-  const { k, dir } = S.sort.hub;
-  rows.sort((a, b) => {
+  const byId = new Map();
+  for (const r of hubRawRows()){
+    const t = tripOf(r, cargo, budget, dst);
+    const row = { ...r, ...t, name: S.names.get(r.id) || ("#" + r.id) };
+    const cur = byId.get(r.id);
+    const score = x => x.tripProfit ?? -1;
+    if (!cur || score(row) > score(cur) || (score(row) === score(cur) && row.profit > cur.profit)) byId.set(r.id, row);
+  }
+  const rows = [];
+  for (const row of byId.values()){
+    if (q && !row.name.toLowerCase().includes(q)) continue;
+    if (row.tripProfit != null && row.tripProfit < minTrip) continue;
+    if (row.tripProfit != null && row.tripProfit <= 0 && !row.tooBig) continue;
+    row.risky = ship.risk && row.tripCost > ship.risk;
+    row.adv = dst === "jita" ? adviseSell(row.id, row.tripUnits || row.units) : null;
+    row.advTag = row.adv ? row.adv.tag : "";
+    rows.push(row);
+  }
+  return sortRows(rows, "hub");
+}
+function sortRows(out, key){
+  const { k, dir } = S.sort[key];
+  out.sort((a, b) => {
     const x = a[k], y = b[k];
     if (typeof x === "string") return dir * x.localeCompare(y, "fr");
     return dir * ((x ?? -Infinity) - (y ?? -Infinity));
   });
-  return rows;
+  return out;
 }
-function computeRows(){
-  if (S.tab === "hub") return computeHubRows();
+function computeBuyRows(hubSel){
+  const days = S.period, minIsk = +$("selVol").value, minDays = +$("selDays").value * days;
+  const q = $("q").value.trim().toLowerCase();
+  const pMin = parseIsk($("fPriceMin").value), pMax = parseIsk($("fPriceMax").value);
+  const qMin = +$("fQtyMin").value || 0, dMin = $("fDiscMin").value === "" ? null : (+$("fDiscMin").value) / 100, oMin = +$("fOrdersMin").value || 0;
+  const hubs = hubSel === "all" ? HUBS.filter(h => S.hubOrders[h.k]) : HUBS.filter(h => h.k === hubSel && S.hubOrders[h.k]);
+  const out = [];
+  for (const id of S.orders.keys()){
+    if (S.cats && !S.cats.has(catKey(id))) continue;
+    const st = periodStats(S.hist.get(id), days);
+    if (!st) continue;
+    if (st.dailyIsk < minIsk || st.daysActive < Math.floor(minDays)) continue;
+    let best = null;
+    for (const h of hubs){
+      const b = S.hubOrders[h.k].get(id);
+      if (!b || !b.sell) continue;
+      if (pMin != null && b.sell < pMin) continue;
+      if (pMax != null && b.sell > pMax) continue;
+      if (b.sellQty < qMin || b.nSell < oMin) continue;
+      if (!best || b.sell < best.b.sell) best = { h, b };
+    }
+    if (!best) continue;
+    const name = S.names.get(id) || ("#" + id);
+    if (q && !name.toLowerCase().includes(q)) continue;
+    const { h, b } = best;
+    const disc = (st.avg - b.sell) / st.avg;
+    if (dMin != null && disc < dMin) continue;
+    const r = { id, name, ...st, hub: h.k, sell: b.sell, sellQty: b.sellQty, nSell: b.nSell, disc, jumps: jumps("jita", h.k) ?? (h.k === "jita" ? 0 : null) };
+    r.adv = adviseBuy(id, b.sell, h.k, b.sellQty); r.advTag = r.adv.tag;
+    r.flag = disc > 0.5 || (disc > 0.25 && b.sellQty * b.sell < st.dailyIsk * 0.02);
+    out.push(r);
+  }
+  return sortRows(out, "buy");
+}
+function computeTradeRows(){
   const days = S.period, minIsk = +$("selVol").value, minDays = +$("selDays").value * days;
   const q = $("q").value.trim().toLowerCase();
   const tax = (+$("fTax").value || 0) / 100, broker = (+$("fBroker").value || 0) / 100, minMargin = (+$("fMin").value || 0) / 100;
   const pMin = parseIsk($("fPriceMin").value), pMax = parseIsk($("fPriceMax").value);
-  const qMin = +$("fQtyMin").value || 0, dMin = $("fDiscMin").value === "" ? null : (+$("fDiscMin").value) / 100, oMin = +$("fOrdersMin").value || 0;
+  const qMin = +$("fQtyMin").value || 0, oMin = +$("fOrdersMin").value || 0;
   const out = [];
   for (const [id, o] of S.orders){
     if (S.cats && !S.cats.has(catKey(id))) continue;
-    if (!o.sell) continue;
+    if (!o.sell || !o.buy) continue;
     if (pMin != null && o.sell < pMin) continue;
     if (pMax != null && o.sell > pMax) continue;
     if (o.sellQty < qMin || o.nSell < oMin) continue;
@@ -848,45 +976,31 @@ function computeRows(){
     const name = S.names.get(id) || ("#" + id);
     if (q && !name.toLowerCase().includes(q)) continue;
     const r = { id, name, ...o, ...st };
-    if (S.tab === "buy"){
-      if (!o.sell) continue;
-      r.disc = (st.avg - o.sell) / st.avg;
-      if (dMin != null && r.disc < dMin) continue;
-      for (const h of HUBS){ if (h.k === "jita") continue; const b = S.hubOrders[h.k]?.get(id);
-        if (b && b.sell && b.sell < o.sell * 0.97){ const gap = (o.sell - b.sell) / o.sell; if (!r.cheaper || gap > r.cheaper.gap) r.cheaper = { k: h.k, gap, price: b.sell }; } }
-      r.cheaperGap = r.cheaper ? r.cheaper.gap : 0;
-      r.adv = adviseBuy(id); r.advTag = r.adv.tag;
-      r.flag = r.disc > 0.5 || (r.disc > 0.25 && o.sellQty * o.sell < st.dailyIsk * 0.02);
-    } else {
-      if (!o.sell || !o.buy) continue;
-      const buyP = o.buy + 0.01, sellP = o.sell - 0.01;
-      const cost = buyP * (1 + broker), rev = sellP * (1 - tax - broker);
-      r.profit = rev - cost; r.margin = r.profit / cost;
-      r.buyVsAvg = (o.buy - st.avg) / st.avg;
-      r.potential = Math.max(0, r.profit) * st.dailyVol * 0.1;
-      if (r.margin < minMargin) continue;
-      r.flag = r.margin > 1.5;
-    }
+    const cost = (o.buy + 0.01) * (1 + broker), rev = (o.sell - 0.01) * (1 - tax - broker);
+    r.profit = rev - cost; r.margin = r.profit / cost;
+    r.buyVsAvg = (o.buy - st.avg) / st.avg;
+    r.potential = Math.max(0, r.profit) * st.dailyVol * 0.1;
+    if (r.margin < minMargin) continue;
+    r.flag = r.margin > 1.5;
     out.push(r);
   }
-  const { k, dir } = S.sort[S.tab];
-  out.sort((a, b) => {
-    const x = a[k], y = b[k];
-    if (typeof x === "string") return dir * x.localeCompare(y, "fr");
-    return dir * ((x ?? -Infinity) - (y ?? -Infinity));
-  });
-  return out;
+  return sortRows(out, "trade");
+}
+function computeRows(){
+  if (S.tab === "hub") return computeHubRows();
+  if (S.tab === "buy") return computeBuyRows($("bHub").value);
+  return computeTradeRows();
 }
 
 /* ---------- render ---------- */
 const COLS = {
   buy: [
     ["name", "Objet"], ["sell", "Vente la moins chère"], ["avg", "Moyenne période"], ["disc", "Sous la moyenne"],
-    ["sellQty", "Qté à ce prix"], ["dailyIsk", "Échangé / jour"], ["daysActive", "Jours actifs"], ["cheaperGap", "Moins cher ailleurs"], ["advTag", "Conseil"]
+    ["hub", "Où"], ["sellQty", "Qté à ce prix"], ["dailyIsk", "Échangé / jour"], ["daysActive", "Jours actifs"], ["advTag", "Conseil"]
   ],
   hub: [
-    ["name", "Objet"], ["src", "Acheter à"], ["maxBuy", "Prix d'achat max."], ["sellAt", "Prix de revente"], ["units", "Unités"],
-    ["profit", "Profit total"], ["roi", "Marge"], ["jumps", "Sauts"], ["m3", "Volume"], ["ppj", "Profit / saut"], ["advTag", "Conseil revente"]
+    ["name", "Objet"], ["src", "Acheter à"], ["maxBuy", "Prix max."], ["sellAt", "Revente"], ["tripUnits", "Par voyage"], ["fill", "Soute"],
+    ["tripProfit", "Profit / voyage"], ["roi", "Marge"], ["pm3", "Profit / m³"], ["ppj", "Profit / saut"], ["advTag", "Revente"]
   ],
   trade: [
     ["name", "Objet"], ["buy", "Meilleur achat"], ["sell", "Meilleure vente"], ["margin", "Marge nette"],
@@ -903,26 +1017,32 @@ function cell(r, k){
     case "name": {
       const c = S.typeCat.get(r.id), g = S.groups;
       const path = c && g ? (c[1] !== c[0] ? `${g[c[0]]?.n || ""} › ${g[c[1]]?.n || ""}` : g[c[0]]?.n || "") : "";
-      return `${esc(r.name)}${r.flag ? '<span class="flag" title="Écart inhabituel ou faible quantité : vérifie en jeu">à vérifier</span>' : ""}${path ? `<span class="catpath">${esc(path)}</span>` : ""}`;
+      return `<span class="iname">${esc(r.name)}</span>${r.flag ? '<span class="flag" title="Écart inhabituel ou faible quantité : vérifie en jeu">à vérifier</span>' : ""}${path ? `<span class="catpath">${esc(path)}</span>` : ""}`;
     }
     case "profit": if (S.tab === "hub") return `<span class="pos">${fmtIsk(r.profit)}</span>`;
     case "sell": case "buy": case "avg": return k === "profit" ? `<span class="${r.profit > 0 ? "pos" : "neg"}">${fmtIsk(r.profit)}</span>` : fmtIsk(r[k]);
     case "disc": {
-      const w = Math.max(0, Math.min(1, r.disc / 0.3)) * 100;
-      return `<span class="deal"><span class="${r.disc > 0 ? "pos" : "neg"}">${fmtPct(-r.disc)}</span><span class="track"><i style="width:${w}%"></i></span></span>`;
+      return `<span class="chip ${r.disc > 0 ? "pos" : "neg"}">${fmtPct(-r.disc)}</span>`;
     }
-    case "margin": return `<span class="${r.margin > 0 ? "pos" : "neg"}">${fmtPct(r.margin, false)}</span>`;
+    case "margin": return `<span class="chip ${r.margin > 0 ? "pos" : "neg"}">${fmtPct(r.margin, false)}</span>`;
     case "buyVsAvg": return `<span class="${r.buyVsAvg < 0 ? "pos" : "dim"}">${fmtPct(r.buyVsAvg)}</span>`;
     case "sellQty": case "dailyVol": return fmtNum(r[k]);
     case "dailyIsk": case "potential": return fmtIsk(r[k]);
     case "daysActive": return `${r.daysActive} / ${S.period}`;
-    case "src": return `<span class="hubtag">${HUB[r.src].n}</span>`;
-    case "maxBuy": case "sellAt": case "ppj": return fmtIsk(r[k]);
+    case "src": return `<span class="hubtag">${HUB[r.src].n}<small>${r.route != null ? r.route + " sauts au total" : "&nbsp;"}</small></span>`;
+    case "hub": return `<span class="hubtag">${HUB[r.hub].n}<small>${r.hub === "jita" ? "sur place" : (r.jumps != null ? r.jumps + " sauts de Jita" : "&nbsp;")}</small></span>`;
+    case "maxBuy": case "sellAt": return fmtIsk(r[k]);
+    case "ppj": case "pm3": return r[k] == null ? '<span class="dim">…</span>' : fmtIsk(r[k]);
+    case "tripUnits": return r.tripUnits == null ? '<span class="dim">…</span>' : `${fmtNum(r.tripUnits)}<span class="catpath">sur ${fmtNum(r.units)} dispo</span>`;
+    case "tripProfit": return r.tripProfit == null ? '<span class="dim">volume…</span>' : `<span class="pos">${fmtIsk(r.tripProfit)}</span>${r.risky ? '<span class="catpath" style="color:var(--warn)">cargaison à risque</span>' : ""}`;
+    case "fill": {
+      if (r.tooBig) return '<span class="pill bad">Ne rentre pas</span>';
+      if (r.fill == null) return '<span class="dim">…</span>';
+      const w = Math.min(1, r.fill) * 100;
+      return `<span class="fill"><span>${Math.round(w)} %</span><span class="track"><i style="width:${w}%"></i></span></span>`;
+    }
+    case "roi": return `<span class="chip pos">${fmtPct(r.roi, false)}</span>`;
     case "units": return fmtNum(r.units);
-    case "roi": return `<span class="pos">${fmtPct(r.roi, false)}</span>`;
-    case "jumps": return r.jumps == null ? "—" : r.jumps;
-    case "m3": return r.m3 == null ? '<span class="dim">…</span>' : fmtNum(r.m3) + " m³";
-    case "cheaperGap": return r.cheaper ? `<span class="pos">${HUB[r.cheaper.k].n} ${fmtPct(-r.cheaper.gap)}</span>` : '<span class="dim">—</span>';
     case "advTag": { const a = r.adv || (S.tab === "buy" ? adviseBuy(r.id) : null); return a ? pill(a) : '<span class="dim">—</span>'; }
   }
   return "";
@@ -940,15 +1060,34 @@ function render(){
       : `<strong>Aucune donnée pour l'instant</strong>Clique sur « Lancer l'analyse ». Les premiers résultats apparaissent dès que l'historique arrive, pendant que le reste se charge.`;
   } else empty.hidden = true;
   $("moreBox").hidden = S.rows.length <= S.shown;
-  if (S.tab === "hub"){
-    const ids = rows.filter(r => !S.vols.has(r.id)).map(r => r.id);
-    if (ids.length) ensureVols(ids);
-  }
+  const hubRows = S.tab === "hub" ? S.rows : (S.hubOrders.amarr || S.hubOrders.dodixie ? computeHubRows() : []);
+  const missingVols = hubRows.filter(r => !S.vols.has(r.id)).map(r => r.id);
+  if (missingVols.length) ensureVols(missingVols);
+  updateHighlights(S.tab === "buy" ? S.rows : computeBuyRows("all"), hubRows);
+  const sh = SHIP[$("hShip").value] || SHIP.ind;
   $("tabNote").textContent = S.tab === "hub"
-    ? `Objets moins chers dans un hub que leur prix de revente à ${HUB[$("hDst").value].n}, taxes déduites. Les unités tiennent compte de la profondeur des ordres${$("hMode").value === "order" ? " et sont limitées à environ une journée de ventes à Jita" : ""}. ${S.rows.length.toLocaleString("fr-FR")} résultats.`
+    ? `Ce que tu peux rapporter en un voyage avec ${sh.k === "custom" ? "ta soute" : "un " + sh.n.split(" (")[0].toLowerCase()} de ${fmtNum(cargoNow())} m³, en achetant dans un hub et en revendant à ${HUB[$("hDst").value].n}, taxes déduites. Les quantités tiennent compte de la place dans la soute, de ton budget, de la profondeur des ordres${$("hMode").value === "order" ? " et d'environ une journée de ventes à Jita" : ""}.${missingVols.length ? ` Volume en cours de récupération pour ${fmtNum(missingVols.length)} objets.` : ""} ${S.rows.length.toLocaleString("fr-FR")} résultats.`
     : S.tab === "buy"
-    ? `Objets dont la vente la moins chère à Jita IV-4 est sous le prix moyen des ${periodLabel()}. ${S.rows.length.toLocaleString("fr-FR")} résultats.`
+    ? `Objets vendus sous le prix moyen de Jita sur les ${periodLabel()}, ${$("bHub").value === "all" ? "en prenant pour chacun le hub le moins cher" : "à " + HUB[$("bHub").value].n}. ${S.rows.length.toLocaleString("fr-FR")} résultats.`
     : `Écart entre le meilleur ordre d'achat et la meilleure vente, taxes et courtage déduits. « Potentiel / jour » suppose que tu captes 10 % du volume quotidien. ${S.rows.length.toLocaleString("fr-FR")} résultats.`;
+}
+function updateHighlights(buyRows, hubRows){
+  const b = buyRows.filter(r => !r.flag && r.adv && r.adv.cls === "good").sort((x, y) => y.disc - x.disc)[0];
+  const hb = $("hlBuy");
+  if (b){
+    hb.querySelector(".v").className = "v pos"; hb.querySelector(".v").textContent = fmtPct(-b.disc);
+    hb.querySelector(".n").textContent = b.name;
+    hb.querySelector(".d").textContent = `${fmtIsk(b.sell)} à ${HUB[b.hub].n} · moyenne ${fmtIsk(b.avg)}`;
+    hb.onclick = () => openDrawer(b);
+  }
+  const t = hubRows.filter(r => r.tripProfit > 0 && !r.risky).sort((x, y) => y.tripProfit - x.tripProfit)[0];
+  const hi = $("hlImport");
+  if (t){
+    hi.querySelector(".v").className = "v pos"; hi.querySelector(".v").textContent = "+" + fmtIsk(t.tripProfit);
+    hi.querySelector(".n").textContent = t.name;
+    hi.querySelector(".d").textContent = `${fmtNum(t.tripUnits)} u. de ${HUB[t.src].n} vers ${HUB[t.dst].n} · ${t.route ?? "?"} sauts`;
+    hi.onclick = () => openDrawer(t);
+  }
 }
 const periodLabel = () => S.period === 1 ? "dernières 24 h" : S.period === 365 ? "12 derniers mois" : `${S.period} derniers jours`;
 
@@ -958,15 +1097,30 @@ function openDrawer(row){
   const r = { id, name: S.names.get(id) || row.name || ("#" + id), ...o, ...st, units: row.units, src: row.src };
   S.selected = r;
   $("dName").textContent = r.name;
+  // headline price: where the row says to buy, else Jita
+  const hk = row.src || row.hub || "jita";
+  const price = row.src ? row.maxBuy : row.hub ? row.sell : o.sell;
+  const ref = st.avg || null, chg = price && ref ? (price - ref) / ref : null;
+  $("dPrice").innerHTML = `<span class="sub">${row.src ? "Prix max. à payer à " : "Vente la moins chère à "}${HUB[hk].n}</span>
+    <span class="big">${fmtIsk(price)} <span style="font-size:18px;color:var(--muted);font-weight:600">ISK</span></span>
+    ${chg != null ? `<span class="chg ${chg < 0 ? "pos" : "neg"}">${fmtPct(chg)} par rapport à la moyenne ${S.period === 1 ? "d'hier" : S.period + " j"} de Jita (${fmtIsk(ref)})</span>` : ""}`;
   // advice
-  const b = adviseBuy(id), sl = adviseSell(id, row.units || 0);
+  const b = row.hub ? adviseBuy(id, row.sell, row.hub, row.sellQty) : adviseBuy(id);
+  const qty = row.tripUnits ?? row.units ?? 0;
+  const sl = adviseSell(id, qty);
   let html = "";
-  if (row.src && row.src !== "jita"){
-    html += `<div class="head"><span class="pill good">Importer</span><strong>Acheter à ${HUB[row.src].n}, revendre à ${HUB[row.dst].n}</strong></div>
-      <ul><li>Achète jusqu'à ${fmtNum(row.units)} unités à ${HUB[row.src].n}, sans dépasser ${fmtIsk(row.maxBuy)} l'unité (coût ≈ ${fmtIsk(row.cost)}).</li>
-      <li>Profit estimé : ${fmtIsk(row.profit)} (${fmtPct(row.roi, false)}) après taxes${row.jumps != null ? `, pour ${row.jumps} sauts en high-sec` : ""}.</li></ul>`;
+  if (row.src && row.src !== row.dst){
+    const ship = SHIP[$("hShip").value] || SHIP.ind;
+    html += `<div class="head"><span class="pill good">Voyage</span><strong>Acheter à ${HUB[row.src].n}, revendre à ${HUB[row.dst].n}</strong></div><ul>`;
+    if (row.tooBig) html += `<li>Cet objet fait ${fmtNum(row.v)} m³ emballé : il ne rentre pas dans ${fmtNum(cargoNow())} m³. Il faut un plus gros vaisseau.</li>`;
+    else if (row.tripUnits != null){
+      html += `<li>Prends ${fmtNum(row.tripUnits)} unités${row.tripUnits < row.units ? ` (sur ${fmtNum(row.units)} rentables, limité par ${row.tripUnits === row.fit ? "ta soute" : "ton budget"})` : ""}, sans dépasser ${fmtIsk(row.maxBuy)} l'unité.</li>
+        <li>Investissement ≈ ${fmtIsk(row.tripCost)}, profit estimé ${fmtIsk(row.tripProfit)} après taxes, soit ${fmtIsk(row.pm3)} par m³ de soute${row.route ? ` et ${fmtIsk(row.ppj)} par saut sur ${row.route} sauts` : ""}.</li>`;
+      if (row.risky) html += `<li>Valeur transportée élevée pour ce vaisseau (${fmtIsk(row.tripCost)}) : les cargaisons au-delà de ~${fmtIsk(ship.risk)} attirent les gankers en high-sec. Fais plusieurs voyages ou prends un vaisseau plus sûr.</li>`;
+    } else html += `<li>Récupération du volume de l'objet en cours…</li>`;
+    html += `</ul>`;
   }
-  html += `<div class="head">${pill(b)}<strong>Acheter à Jita maintenant ?</strong></div><ul>${b.lines.map(l => `<li>${esc(l)}</li>`).join("")}</ul>`;
+  html += `<div class="head">${pill(b)}<strong>${row.hub && row.hub !== "jita" ? "Acheter à " + HUB[row.hub].n + " maintenant ?" : "Acheter à Jita maintenant ?"}</strong></div><ul>${b.lines.map(l => `<li>${esc(l)}</li>`).join("")}</ul>`;
   html += `<div class="head">${pill(sl)}<strong>Revendre à Jita : maintenant ou plus tard ?</strong></div><ul>${sl.lines.map(l => `<li>${esc(l)}</li>`).join("")}</ul>`;
   $("dAdvice").innerHTML = html;
   const kv = [
@@ -987,11 +1141,11 @@ function openDrawer(row){
       <td class="${gap == null || h.k === "jita" ? "dim" : gap < 0 ? "pos" : "neg"}">${h.k === "jita" ? "réf." : fmtPct(gap)}</td><td>${h.k === "jita" ? "0" : jumps("jita", h.k) ?? "—"}</td></tr>`;
   }).join("");
   $("dLinks").innerHTML = `<a href="https://evetycoon.com/market/${id}" target="_blank" rel="noopener">Voir sur EVE Tycoon</a><a href="https://everef.net/type/${id}" target="_blank" rel="noopener">Fiche EVE Ref</a>`;
-  $("drawer").classList.add("open"); $("drawer").setAttribute("aria-hidden", "false");
+  $("drawer").classList.add("open"); $("drawer").setAttribute("aria-hidden", "false"); $("scrim").classList.add("on");
   $("tip").hidden = true;
   drawChart(r);
 }
-function closeDrawer(){ $("drawer").classList.remove("open"); $("drawer").setAttribute("aria-hidden", "true"); }
+function closeDrawer(){ $("drawer").classList.remove("open"); $("drawer").setAttribute("aria-hidden", "true"); $("scrim").classList.remove("on"); }
 function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
 function chartRows(r){
   const h = S.hist.get(r.id); if (!h) return [];
@@ -1006,7 +1160,7 @@ function drawChart(r, hover){
   S.chartPts = null;
   const rows = chartRows(r);
   const muted = cssVar("--muted"), line = cssVar("--line"), acc = cssVar("--accent");
-  ctx.font = "22px " + cssVar("--f-mono");
+  ctx.font = "500 22px " + cssVar("--f-body");
   if (rows.length < 2){
     ctx.fillStyle = muted; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("Pas assez d'historique sur cette période", W / 2, H / 2); return;
@@ -1034,18 +1188,27 @@ function drawChart(r, hover){
   ctx.beginPath();
   rows.forEach((x, i) => { const px = X(Date.parse(x[0])), py = Y(x[4]); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
   for (let i = rows.length - 1; i >= 0; i--){ const x = rows[i]; ctx.lineTo(X(Date.parse(x[0])), Y(x[3])); }
-  ctx.closePath(); ctx.globalAlpha = 0.16; ctx.fillStyle = acc; ctx.fill(); ctx.globalAlpha = 1;
-  const hl = (v, c, dash) => { if (!v) return; ctx.save(); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(P.l, Y(v)); ctx.lineTo(W - P.r, Y(v)); ctx.stroke(); ctx.restore(); };
-  hl(avg, muted, [10, 8]); hl(r.buy, cssVar("--bad"), [4, 6]); hl(r.sell, cssVar("--good"), [4, 6]);
-  ctx.beginPath(); rows.forEach((x, i) => { const px = X(Date.parse(x[0])), py = Y(x[1]); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
-  ctx.strokeStyle = acc; ctx.lineWidth = 3.5; ctx.setLineDash([]); ctx.lineJoin = "round"; ctx.stroke();
+  const tc = rows[rows.length - 1][1] >= rows[0][1] ? cssVar("--good") : cssVar("--bad");
+  const lg = $("lgLine"); if (lg) lg.style.background = tc;
+  ctx.closePath(); ctx.globalAlpha = 0.06; ctx.fillStyle = tc; ctx.fill(); ctx.globalAlpha = 1;
+  // area under the line
+  const path = () => rows.forEach((x, i) => { const px = X(Date.parse(x[0])), py = Y(x[1]); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+  ctx.beginPath(); path(); ctx.lineTo(X(t1), H - P.b); ctx.lineTo(X(t0), H - P.b); ctx.closePath();
+  const gr = ctx.createLinearGradient(0, P.t, 0, H - P.b); gr.addColorStop(0, tc); gr.addColorStop(1, "transparent");
+  ctx.globalAlpha = 0.22; ctx.fillStyle = gr; ctx.fill(); ctx.globalAlpha = 1;
+  const hl = (v, c, dash) => { if (!v) return; ctx.save(); ctx.strokeStyle = c; ctx.lineWidth = 2.5; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(P.l, Y(v)); ctx.lineTo(W - P.r, Y(v)); ctx.stroke(); ctx.restore(); };
+  hl(avg, muted, [10, 8]); hl(r.buy, cssVar("--warn"), [4, 6]); hl(r.sell, acc, [4, 6]);
+  ctx.beginPath(); path();
+  ctx.strokeStyle = tc; ctx.lineWidth = 4; ctx.setLineDash([]); ctx.lineJoin = "round"; ctx.stroke();
   ctx.restore();
   const pt = hover != null ? rows[hover] : rows[rows.length - 1];
   if (hover != null){
     const px = X(Date.parse(pt[0]));
     ctx.save(); ctx.strokeStyle = muted; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(px, P.t); ctx.lineTo(px, H - P.b); ctx.stroke(); ctx.restore();
   }
-  ctx.fillStyle = acc; ctx.beginPath(); ctx.arc(X(Date.parse(pt[0])), Y(pt[1]), hover != null ? 8 : 6, 0, 7); ctx.fill();
+  ctx.fillStyle = rows[rows.length - 1][1] >= rows[0][1] ? cssVar("--good") : cssVar("--bad");
+  ctx.beginPath(); ctx.arc(X(Date.parse(pt[0])), Y(pt[1]), hover != null ? 9 : 7, 0, 7); ctx.fill();
+  ctx.strokeStyle = cssVar("--surface"); ctx.lineWidth = 3; ctx.stroke();
   S.chartPts = { rows, X, Y, W, H, P, avg };
 }
 function chartHover(e){
@@ -1080,16 +1243,11 @@ function chartLeave(){ $("tip").hidden = true; if (S.selected) drawChart(S.selec
 /* ---------- cargo plan ---------- */
 async function computePlan(){
   const dst = $("hDst").value;
-  const budget = parseIsk($("hBudget").value) || Infinity, cargo = +$("hCargo").value || Infinity;
+  const budget = parseIsk($("hBudget").value) || Infinity, cargo = cargoNow();
   const box = $("plan"); box.hidden = false;
-  if (budget === Infinity && cargo === Infinity){
-    S.plan = { empty: true };
-    box.innerHTML = `<h3>Meilleur chargement</h3><div class="others">Indique ton budget, la capacité de ta soute en m³, ou les deux, puis relance.</div>`;
-    return;
-  }
   if (!Object.keys(S.hubOrders).length){ box.innerHTML = `<h3>Meilleur chargement</h3><div class="others">Les ordres des hubs ne sont pas encore chargés.</div>`; return; }
   box.innerHTML = `<h3>Meilleur chargement</h3><div class="others">Calcul en cours, récupération du volume des objets…</div>`;
-  const opts = hubOpts();
+  const opts = { ...hubOpts(), profitMin: 0 };
   const srcs = HUBS.filter(h => h.k !== dst && S.hubOrders[h.k]).map(h => h.k);
   const cands = {};
   for (const sk of srcs) cands[sk] = hubRowsFor([sk], dst, opts).sort((a, b) => b.profit - a.profit).slice(0, 250);
@@ -1113,7 +1271,7 @@ async function computePlan(){
     const trip = (jumps("jita", sk) ?? 0) + (jumps(sk, dst) ?? 0);
     return { src: sk, items, cost: sum("cost"), m3: sum("m3"), profit: sum("profit"), trip };
   }).filter(p => p.items.length).sort((a, b) => b.profit - a.profit);
-  S.plan = { plans, dst };
+  S.plan = { plans, dst, cargo, budget, ship: SHIP[$("hShip").value] || SHIP.ind };
   renderPlan();
 }
 function renderPlan(){
@@ -1121,15 +1279,17 @@ function renderPlan(){
   if (!P || P.empty) return;
   if (!P.plans.length){ box.innerHTML = `<h3>Meilleur chargement</h3><div class="others">Aucun achat rentable avec ces réglages. Essaie une marge minimum plus basse ou un autre hub de revente.</div>`; return; }
   const p = P.plans[0], dn = HUB[P.dst].n, sn = HUB[p.src].n;
+  box.hidden = S.tab !== "hub";
   box.innerHTML = `<h3>Meilleur chargement : acheter à ${sn}, revendre à ${dn}</h3>
     <div class="summary">
       <div><span>Profit estimé</span><b class="pos">${fmtIsk(p.profit)}</b></div>
       <div><span>Investissement</span><b>${fmtIsk(p.cost)}</b></div>
       <div><span>Marge</span><b>${fmtPct(p.profit / p.cost, false)}</b></div>
-      <div><span>Volume</span><b>${fmtNum(p.m3)} m³</b></div>
+      <div><span>Soute utilisée</span><b>${fmtNum(p.m3)} / ${fmtNum(P.cargo)} m³</b></div>
       <div><span>Trajet depuis Jita</span><b>${p.trip ? p.trip + " sauts" : "—"}</b></div>
       <div><span>Profit / saut</span><b>${p.trip ? fmtIsk(p.profit / p.trip) : "—"}</b></div>
     </div>
+    ${P.ship.risk && p.cost > P.ship.risk ? `<div class="risk"><span>⚠</span><span><b>Cargaison à risque.</b> ${fmtIsk(p.cost)} de marchandises dans un ${P.ship.n.split(" (")[0].toLowerCase()} : au-delà de ~${fmtIsk(P.ship.risk)}, les gankers en high-sec trouvent ça rentable. Réduis le budget, fais plusieurs voyages ou passe à un Blockade Runner / Deep Space Transport.</span></div>` : ""}
     <div class="tbl"><table><thead><tr><th>Objet</th><th>Unités</th><th>Prix max.</th><th>Coût</th><th>Volume</th><th>Revente</th><th>Profit</th></tr></thead><tbody>
     ${p.items.map(x => `<tr data-id="${x.id}"><td>${esc(x.name)}</td><td>${fmtNum(x.units)}</td><td>${fmtIsk(x.maxBuy)}</td><td>${fmtIsk(x.cost)}</td><td>${fmtNum(x.m3)} m³</td><td>${fmtIsk(x.sellAt)}</td><td class="pos">${fmtIsk(x.profit)}</td></tr>`).join("")}
     </tbody></table></div>
@@ -1236,20 +1396,34 @@ let qT; $("q").addEventListener("input", () => { clearTimeout(qT); qT = setTimeo
 const setTab = t => {
   S.tab = t; S.shown = 200;
   $("tabBuy").setAttribute("aria-selected", String(t === "buy")); $("tabTrade").setAttribute("aria-selected", String(t === "trade")); $("tabHub").setAttribute("aria-selected", String(t === "hub"));
-  $("fees").hidden = t === "buy"; $("ctlDisc").hidden = t !== "buy"; $("hubCtl").hidden = t !== "hub"; $("plan").hidden = t !== "hub" || !S.plan;
+  $("fees").hidden = t === "buy"; $("ctlDisc").hidden = t !== "buy"; $("ctlBHub").hidden = t !== "buy"; $("hubCtl").hidden = t !== "hub"; $("plan").hidden = t !== "hub" || !S.plan;
   LS.set("tab", t); render();
 };
 $("tabHub").onclick = () => setTab("hub");
 HUBS.forEach(h => {
   $("hSrc").insertAdjacentHTML("beforeend", `<option value="${h.k}">${h.n}</option>`);
   $("hDst").insertAdjacentHTML("beforeend", `<option value="${h.k}">${h.n}</option>`);
+  $("bHub").insertAdjacentHTML("beforeend", `<option value="${h.k}">${h.n}</option>`);
 });
+SHIPS.forEach(x => $("hShip").insertAdjacentHTML("beforeend", `<option value="${x.k}">${x.n}${x.m3 ? " · " + fmtNum(x.m3) + " m³" : ""}</option>`));
+$("hShip").value = LS.get("hShip", "ind");
+if (!SHIP[$("hShip").value]) $("hShip").value = "ind";
+if (!LS.get("hCargo", "")) $("hCargo").value = SHIP[$("hShip").value].m3 || "";
+$("hShip").addEventListener("change", () => {
+  const sh = SHIP[$("hShip").value]; LS.set("hShip", sh.k);
+  if (sh.m3){ $("hCargo").value = sh.m3; $("hCargo").dataset.applied = String(sh.m3); LS.set("hCargo", String(sh.m3)); }
+  else $("hCargo").focus();
+  S.plan = null; $("plan").hidden = true; S.shown = 200; render();
+});
+$("hCargo").addEventListener("input", () => { const v = +$("hCargo").value; const m = SHIPS.find(x => x.m3 === v); $("hShip").value = m ? m.k : "custom"; LS.set("hShip", $("hShip").value); });
+{ const v = LS.get("bHub", null); if (v) $("bHub").value = v; }
+$("bHub").addEventListener("change", () => { LS.set("bHub", $("bHub").value); S.shown = 200; render(); });
 ["hSrc", "hDst", "hMode", "hProfitMin", "hBudget", "hCargo"].forEach(id => {
   const el = $(id); const v = LS.get(id, null); if (v != null) el.value = v;
   el.dataset.applied = el.value;
   let t;
   const apply = () => { if (el.dataset.applied === el.value) return; el.dataset.applied = el.value; LS.set(id, el.value); S.shown = 200;
-    if (["hBudget", "hCargo"].includes(id)) return; S.plan = null; $("plan").hidden = true; render(); };
+    S.plan = null; $("plan").hidden = true; render(); };
   el.addEventListener("change", apply);
   if (el.tagName === "INPUT") el.addEventListener("input", () => { clearTimeout(t); t = setTimeout(apply, 400); });
 });
@@ -1265,7 +1439,8 @@ $("thead").addEventListener("click", e => {
 const pick = e => { const tr = e.target.closest("tr[data-i]"); if (tr) openDrawer(S.rows[+tr.dataset.i]); };
 $("tbody").addEventListener("click", pick);
 $("tbody").addEventListener("keydown", e => { if (e.key === "Enter") pick(e); });
-$("dClose").onclick = closeDrawer;
+$("btnAdv").onclick = () => { const on = $("mainPanel").classList.toggle("showadv"); $("btnAdv").setAttribute("aria-expanded", String(on)); $("btnAdv").textContent = on ? "Moins de filtres" : "Plus de filtres"; };
+$("dClose").onclick = closeDrawer; $("scrim").onclick = closeDrawer;
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 $("dCopy").onclick = async () => {
   if (!S.selected) return;
