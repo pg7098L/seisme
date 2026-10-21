@@ -112,6 +112,37 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;margin:0;
 .tip div{display:flex;justify-content:space-between;gap:14px}
 .tip span{color:var(--muted)}
 .catpath{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+
+/* advice pills */
+.pill{display:inline-block;font:600 12px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)} .pill.bad{color:var(--bad)} .pill.warn{color:var(--warn)} .pill.neutral{color:var(--muted)}
+.hubtag{font:600 13px var(--f-display);letter-spacing:.06em;text-transform:uppercase}
+
+/* hub tools */
+.hubctl{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.plan{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.plan h3{font:700 20px var(--f-display);letter-spacing:.06em;text-transform:uppercase;margin:0}
+.plan .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.plan .summary div{display:flex;flex-direction:column;gap:2px;background:var(--panel2);border-radius:5px;padding:8px 10px}
+.plan .summary span{font:600 11px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.plan .summary b{font:500 16px var(--f-mono)}
+.plan .others{font-size:13px;color:var(--muted)}
+.plan table{min-width:640px}
+.plan .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:5px}
+.plan td:first-child{position:static}
+
+/* drawer extras */
+.dsec{display:flex;flex-direction:column;gap:8px}
+.dsec h3{font:700 16px var(--f-display);letter-spacing:.1em;text-transform:uppercase;margin:0;color:var(--muted)}
+.advice{display:flex;flex-direction:column;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:12px}
+.advice .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.advice .head strong{font:600 14px var(--f-body)}
+.advice ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.hubs{overflow-x:auto;border:1px solid var(--line);border-radius:5px}
+.hubs table{min-width:440px}
+.hubs td,.hubs th{padding:6px 10px;position:static}
+.hubs td:first-child{min-width:0;font-family:var(--f-display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+.hubs tr.best td{color:var(--good)}
 th:first-child,td:first-child{text-align:left}
 th[aria-sort] ::after{content:""}
 th.sorted{color:var(--accent)}
@@ -152,7 +183,7 @@ footer{font-size:12px;color:var(--muted);max-width:75ch}
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><h1>SEIS<span>ME</span></h1><div class="sub">Scanner de marché · Jita IV - Moon 4 · The Forge</div></div>
+    <div class="brand"><h1>SEIS<span>ME</span></h1><div class="sub">Scanner de marché · Jita · Amarr · Dodixie · Rens · Hek</div></div>
     <div class="actions">
       <button class="btn primary" id="btnScan" type="button">Lancer l'analyse</button>
       <button class="btn" id="btnStop" type="button" disabled>Arrêter</button>
@@ -161,7 +192,7 @@ footer{font-size:12px;color:var(--muted);max-width:75ch}
   </header>
 
   <section class="status" aria-live="polite">
-    <div class="st"><div class="lbl">Ordres Jita <b id="sOrders">—</b></div><div class="bar"><i id="bOrders"></i></div><div class="note" id="nOrders">Pas encore chargés</div></div>
+    <div class="st"><div class="lbl">Ordres des 5 hubs <b id="sOrders">—</b></div><div class="bar"><i id="bOrders"></i></div><div class="note" id="nOrders">Pas encore chargés</div></div>
     <div class="st"><div class="lbl">Noms des objets <b id="sNames">—</b></div><div class="bar"><i id="bNames"></i></div><div class="note" id="nNames">En cache après le premier passage</div></div>
     <div class="st"><div class="lbl">Historique <b id="sHist">—</b></div><div class="bar"><i id="bHist"></i></div><div class="note" id="nHist">Limité par CCP à ~300 objets/minute, mis en cache jusqu'au prochain downtime</div></div>
   </section>
@@ -207,6 +238,7 @@ footer{font-size:12px;color:var(--muted);max-width:75ch}
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabBuy" aria-selected="true" type="button">Bonnes affaires</button>
     <button class="tab" role="tab" id="tabTrade" aria-selected="false" type="button">Trading</button>
+    <button class="tab" role="tab" id="tabHub" aria-selected="false" type="button">Inter-hubs</button>
   </div>
   <p class="tabnote" id="tabNote"></p>
   <div class="fees" id="fees" hidden>
@@ -214,19 +246,31 @@ footer{font-size:12px;color:var(--muted);max-width:75ch}
     <div class="ctl"><label for="fBroker">Frais de courtage %</label><input type="number" id="fBroker" step="0.01" min="0" value="1.50"></div>
     <div class="ctl"><label for="fMin">Marge nette min. %</label><input type="number" id="fMin" step="1" value="5"></div>
   </div>
+  <section class="hubctl" id="hubCtl" hidden>
+    <div class="ctl"><label for="hSrc">Acheter à</label><select id="hSrc"><option value="all">Tous les autres hubs</option></select></div>
+    <div class="ctl"><label for="hDst">Revendre à</label><select id="hDst"></select></div>
+    <div class="ctl"><label for="hMode">Revente</label><select id="hMode"><option value="order">Ordre de vente (meilleur prix)</option><option value="instant">Vente immédiate aux ordres d'achat</option></select></div>
+    <div class="ctl"><label for="hProfitMin">Profit total min.</label><input type="text" class="isk" id="hProfitMin" placeholder="ex. 5m" autocomplete="off"></div>
+    <div class="ctl"><label for="hBudget">Budget</label><input type="text" class="isk" id="hBudget" placeholder="ex. 500m" autocomplete="off"></div>
+    <div class="ctl"><label for="hCargo">Soute (m³)</label><input type="number" id="hCargo" min="0" step="100" placeholder="ex. 5000"></div>
+    <div class="ctl"><button class="btn primary" id="btnPlan" type="button">Meilleur chargement</button></div>
+  </section>
+  <section class="plan" id="plan" hidden></section>
 
   <div class="tablebox"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
     <div class="empty" id="empty"><strong>Aucune donnée pour l'instant</strong>Clique sur « Lancer l'analyse ». Les premiers résultats apparaissent dès que l'historique arrive, pendant que le reste se charge.</div>
     <div class="more" id="moreBox" hidden><button class="btn" id="btnMore" type="button">Afficher 200 de plus</button></div>
   </div>
 
-  <footer>Données : API officielle ESI de CCP (ordres de la station Jita IV-4 et historique journalier de The Forge). Les prix actuels sont mis en cache 5 minutes par CCP, l'historique se met à jour une fois par jour après le downtime. « Moyenne » = prix moyen pondéré par le volume sur la période choisie. Un gros écart sur un objet peu échangé peut être un piège ou une erreur de saisie : vérifie en jeu avant d'acheter.</footer>
+  <footer>Données : API officielle ESI de CCP (ordres des stations Jita IV-4, Amarr VIII, Dodixie IX-20, Rens VI-8 et Hek VIII-12, historique journalier de The Forge). Les conseils sont des estimations calculées à partir de l'historique de Jita, pas des garanties. Les prix actuels sont mis en cache 5 minutes par CCP, l'historique se met à jour une fois par jour après le downtime. « Moyenne » = prix moyen pondéré par le volume sur la période choisie. Un gros écart sur un objet peu échangé peut être un piège ou une erreur de saisie : vérifie en jeu avant d'acheter.</footer>
 </div>
 
 <aside class="drawer" id="drawer" aria-hidden="true">
   <div class="dhead"><h2 id="dName">—</h2><button class="btn" id="dClose" type="button">Fermer</button></div>
   <div class="actions"><button class="btn" id="dCopy" type="button">Copier le nom</button></div>
+  <div class="dsec"><h3>Conseil</h3><div class="advice" id="dAdvice"></div></div>
   <div class="kv" id="dKv"></div>
+  <div class="dsec"><h3>Prix dans les hubs</h3><div class="hubs"><table><thead><tr><th>Hub</th><th>Vente min.</th><th>Qté</th><th>Achat max.</th><th>Vente vs Jita</th><th>Sauts</th></tr></thead><tbody id="dHubs"></tbody></table></div></div>
   <div class="seg" id="segChart" aria-label="Période du graphique">
     <button type="button" data-d="7">7 j</button><button type="button" data-d="14">14 j</button><button type="button" data-d="30">30 j</button>
     <button type="button" data-d="90">3 mois</button><button type="button" data-d="180">6 mois</button><button type="button" data-d="365">1 an</button><button type="button" data-d="9999">Tout</button>
@@ -240,7 +284,15 @@ footer{font-size:12px;color:var(--muted);max-width:75ch}
 (() => {
 "use strict";
 const ESI = "https://esi.evetech.net/latest";
-const REGION = 10000002, STATION = 60003760;
+const REGION = 10000002;
+const HUBS = [
+  { k: "jita", n: "Jita", st: 60003760, reg: 10000002, sys: 30000142 },
+  { k: "amarr", n: "Amarr", st: 60008494, reg: 10000043, sys: 30002187 },
+  { k: "dodixie", n: "Dodixie", st: 60011866, reg: 10000032, sys: 30002659 },
+  { k: "rens", n: "Rens", st: 60004588, reg: 10000030, sys: 30002510 },
+  { k: "hek", n: "Hek", st: 60005686, reg: 10000042, sys: 30002053 }
+];
+const HUB = Object.fromEntries(HUBS.map(h => [h.k, h]));
 const HIST_INTERVAL = 220; // ms between history requests (~270/min, under CCP's 300/min)
 const $ = id => document.getElementById(id);
 
@@ -254,8 +306,8 @@ function idb(){
   if (dbp) return dbp;
   dbp = new Promise(res => {
     try{
-      const r = indexedDB.open("seisme", 2);
-      r.onupgradeneeded = () => { for (const s of ["hist", "names", "meta"]) if (!r.result.objectStoreNames.contains(s)) r.result.createObjectStore(s); };
+      const r = indexedDB.open("seisme", 3);
+      r.onupgradeneeded = () => { for (const s of ["hist", "names", "meta", "vols"]) if (!r.result.objectStoreNames.contains(s)) r.result.createObjectStore(s); };
       r.onsuccess = () => res(r.result);
       r.onerror = () => res(null);
     }catch(e){ res(null); }
@@ -299,13 +351,17 @@ const S = {
   running: false, stop: false,
   tab: "buy",
   period: LS.get("period", 30),
-  sort: { buy: { k: "disc", dir: -1 }, trade: { k: "margin", dir: -1 } },
+  sort: { buy: { k: "disc", dir: -1 }, trade: { k: "margin", dir: -1 }, hub: { k: "profit", dir: -1 } },
   shown: 200,
   rows: [], selected: null,
   groups: null,        // {id: {n: name, p: parentId, types: [...]}}
   typeCat: new Map(),  // typeId -> [rootId, subId]
   cats: LS.get("cats", null) ? new Set(LS.get("cats", [])) : null, // selected sub keys "root:sub"; null = all
   chartDays: LS.get("chartDays", 30),
+  hubOrders: {},       // hubKey -> Map(typeId -> book)
+  vols: new Map(),     // typeId -> packaged m3
+  routes: LS.get("routes", {}), // "a-b" -> jumps
+  plan: null,
   chartPts: null
 };
 
@@ -348,26 +404,25 @@ async function getJSON(url, opts){
 }
 
 /* ---------- 1. orders ---------- */
-async function loadOrders(){
-  $("nOrders").textContent = "Téléchargement des ordres de The Forge…";
+async function loadHubOrders(hub, prog){
   const agg = new Map();
   const ingest = list => {
     for (const o of list){
-      if (o.location_id !== STATION) continue;
+      if (o.location_id !== hub.st) continue;
       let a = agg.get(o.type_id);
-      if (!a){ a = { sell: Infinity, buy: 0, nSell: 0, nBuy: 0, sells: [], buyQty: 0 }; agg.set(o.type_id, a); }
-      if (o.is_buy_order){ a.nBuy++; if (o.price > a.buy){ a.buy = o.price; a.buyQty = o.volume_remain; } else if (o.price === a.buy) a.buyQty += o.volume_remain; }
+      if (!a){ a = { sell: Infinity, buy: 0, nSell: 0, nBuy: 0, sells: [], buys: [], buyQty: 0 }; agg.set(o.type_id, a); }
+      if (o.is_buy_order){ a.nBuy++; a.buys.push([o.price, o.volume_remain]); if (o.price > a.buy) a.buy = o.price; }
       else { a.nSell++; a.sells.push([o.price, o.volume_remain]); if (o.price < a.sell) a.sell = o.price; }
     }
   };
-  const base = `${ESI}/markets/${REGION}/orders/?datasource=tranquility&order_type=all&page=`;
+  const base = `${ESI}/markets/${hub.reg}/orders/?datasource=tranquility&order_type=all&page=`;
   const first = await getJSON(base + 1);
   ingest(first.data);
   let pages = parseInt(first.headers.get("x-pages") || "0", 10);
   const known = pages > 0;
   if (!known) pages = 2000;
-  let done = 1, next = 2, finished = false;
-  $("sOrders").textContent = known ? `1 / ${pages}` : "1";
+  prog.add(known ? pages : 1, 1);
+  let next = 2, finished = false;
   const worker = async () => {
     while (!finished && next <= pages && !S.stop){
       const p = next++;
@@ -380,28 +435,50 @@ async function loadOrders(){
           await sleep(1500 * tries);
         }
       }
-      done++;
-      $("sOrders").textContent = known ? `${done} / ${pages}` : `${done}`;
-      if (known) setBar("bOrders", done / pages);
+      prog.add(0, 1);
     }
   };
-  await Promise.all(Array.from({ length: 16 }, worker));
-  // quantity available within 2% of the lowest sell price
+  await Promise.all(Array.from({ length: hub.k === "jita" ? 16 : 6 }, worker));
   for (const a of agg.values()){
+    a.sells.sort((x, y) => x[0] - y[0]); a.sells = a.sells.slice(0, 60);
+    a.buys.sort((x, y) => y[0] - x[0]); a.buys = a.buys.slice(0, 60);
     if (a.sell === Infinity){ a.sell = null; a.sellQty = 0; }
     else { const lim = a.sell * 1.02; a.sellQty = a.sells.reduce((s, [p, v]) => p <= lim ? s + v : s, 0); }
-    a.buy = a.buy || null; delete a.sells;
+    a.buy = a.buy || null;
+    a.buyQty = a.buy ? a.buys.reduce((s, [p, v]) => p >= a.buy * 0.98 ? s + v : s, 0) : 0;
   }
-  S.orders = agg; S.ordersAt = Date.now();
+  return agg;
+}
+function progress(){
+  let total = 0, done = 0;
+  return { add(t, d){ total += t; done += d; $("sOrders").textContent = `${done} / ${total} pages`; setBar("bOrders", total ? done / total : 0); } };
+}
+async function loadOrders(withHubs){
+  const prog = progress();
+  $("nOrders").textContent = "Téléchargement des ordres de Jita…";
+  S.orders = await loadHubOrders(HUB.jita, prog); S.ordersAt = Date.now();
+  if (withHubs && !S.stop){
+    $("nOrders").textContent = "Jita chargé, téléchargement d'Amarr, Dodixie, Rens et Hek…";
+    render();
+    const others = HUBS.filter(h => h.k !== "jita");
+    const res = await Promise.allSettled(others.map(h => loadHubOrders(h, prog)));
+    res.forEach((r, i) => { if (r.status === "fulfilled") S.hubOrders[others[i].k] = r.value; });
+    const failed = others.filter((h, i) => res[i].status !== "fulfilled").map(h => h.n);
+    if (failed.length) msg("Ordres indisponibles pour " + failed.join(", ") + ". Réessaie avec « Actualiser les prix ».");
+  }
+  S.hubOrders.jita = S.orders;
   setBar("bOrders", 1);
-  $("sOrders").textContent = `${agg.size.toLocaleString("fr-FR")} objets`;
+  const n = HUBS.filter(h => S.hubOrders[h.k]).length;
+  $("sOrders").textContent = `${n} hub${n > 1 ? "s" : ""}`;
   $("nOrders").textContent = "Prix relevés à " + new Date(S.ordersAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
 /* ---------- 2. names ---------- */
 async function loadNames(){
   if (!S.names.size) S.names = await idbGetAll("names");
-  const missing = [...S.orders.keys()].filter(id => !S.names.has(id));
+  const all = new Set(); for (const h of HUBS) for (const id of (S.hubOrders[h.k] || new Map()).keys()) all.add(id);
+  for (const id of S.orders.keys()) all.add(id);
+  const missing = [...all].filter(id => !S.names.has(id));
   const total = missing.length; let done = 0;
   $("sNames").textContent = total ? `0 / ${total}` : `${S.names.size.toLocaleString("fr-FR")} en cache`;
   for (let i = 0; i < missing.length && !S.stop; i += 1000){
@@ -511,6 +588,159 @@ function setCats(set){
   buildCatPanel(); S.shown = 200; render();
 }
 
+/* ---------- 2c. routes and item volumes ---------- */
+const rkey = (a, b) => [a, b].sort().join("-");
+const jumps = (a, b) => a === b ? 0 : S.routes[rkey(a, b)];
+async function loadRoutes(){
+  const pairs = [];
+  for (let i = 0; i < HUBS.length; i++) for (let j = i + 1; j < HUBS.length; j++) if (S.routes[rkey(HUBS[i].k, HUBS[j].k)] == null) pairs.push([HUBS[i], HUBS[j]]);
+  await Promise.all(pairs.map(async ([a, b]) => {
+    try{
+      const r = await getJSON(`${ESI}/route/${a.sys}/${b.sys}/?datasource=tranquility&flag=secure`);
+      S.routes[rkey(a.k, b.k)] = r.data.length - 1;
+    }catch(e){}
+  }));
+  LS.set("routes", S.routes);
+}
+let volQueue = new Set(), volRunning = false;
+async function ensureVols(ids){
+  if (!S.vols.size){ S.vols = await idbGetAll("vols"); }
+  ids.forEach(id => { if (!S.vols.has(id)) volQueue.add(id); });
+  if (volRunning || !volQueue.size) return;
+  volRunning = true;
+  const worker = async () => {
+    while (volQueue.size){
+      const id = volQueue.values().next().value; volQueue.delete(id);
+      try{
+        const t = (await getJSON(`${ESI}/universe/types/${id}/?datasource=tranquility`)).data;
+        const v = t.packaged_volume ?? t.volume ?? null;
+        if (v != null){ S.vols.set(id, v); idbPut("vols", id, v); }
+      }catch(e){}
+    }
+  };
+  await Promise.all(Array.from({ length: 16 }, worker));
+  volRunning = false;
+  render();
+}
+
+/* ---------- advice ---------- */
+function marketStats(id){
+  const h = S.hist.get(id);
+  if (!h || h.rows.length < 7) return null;
+  const s30 = periodStats(h, 30), s7 = periodStats(h, 7);
+  if (!s30 || !s7) return null;
+  const cutoff = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+  const avgs = h.rows.filter(x => x[0] >= cutoff).map(x => x[1]);
+  const m = avgs.reduce((a, b) => a + b, 0) / avgs.length;
+  const sd = Math.sqrt(avgs.reduce((a, b) => a + (b - m) * (b - m), 0) / avgs.length);
+  return { a30: s30.avg, a7: s7.avg, dv: s30.dailyVol, days: s30.daysActive, vol: m ? sd / m : 0, trend: s30.avg ? s7.avg / s30.avg - 1 : 0 };
+}
+// Should I buy at Jita right now?
+function adviseBuy(id){
+  const o = S.orders.get(id), st = marketStats(id);
+  if (!o || !o.sell) return { tag: "Pas en vente", cls: "neutral", lines: ["Aucun ordre de vente à Jita en ce moment."] };
+  if (!st) return { tag: "Données ?", cls: "neutral", lines: ["Pas assez d'historique pour juger ce prix."] };
+  const lines = [], thr = Math.max(0.05, 1.5 * st.vol), disc = (st.a30 - o.sell) / st.a30;
+  const band = `le prix varie en général de ±${(st.vol * 100).toFixed(0)} % autour de sa moyenne`;
+  if (st.dv < 1 || st.days < 10) return { tag: "Peu liquide", cls: "warn", lines: [`Seulement ${st.days} jours avec des ventes sur 30 et ${fmtNum(st.dv)} unité(s) par jour : tu risques d'avoir du mal à revendre.`] };
+  let tag, cls;
+  if (disc >= thr){
+    tag = "Acheter"; cls = "good";
+    lines.push(`La vente la moins chère est ${fmtPct(disc, false)} sous la moyenne 30 j, alors que ${band} : c'est inhabituellement bas.`);
+    if (st.trend < -Math.max(0.03, st.vol)){ tag = "Acheter prudemment"; cls = "warn"; lines.push(`Mais le prix baisse depuis une semaine (${fmtPct(st.trend)} sur 7 j par rapport à 30 j) : il peut encore descendre.`); }
+    if (o.sellQty * o.sell < st.a30 * st.dv * 0.02) lines.push("La quantité à ce prix est faible : ça peut être un seul vendeur pressé, il faudra être rapide.");
+  } else if (disc > 0){
+    tag = "Prix correct"; cls = "neutral";
+    lines.push(`${fmtPct(disc, false)} sous la moyenne 30 j, ce qui reste dans la variation normale (${band}).`);
+  } else {
+    tag = "Cher"; cls = "bad";
+    lines.push(`La vente la moins chère est ${fmtPct(-disc, false)} au-dessus de la moyenne 30 j.`);
+    if (st.trend > Math.max(0.03, st.vol)) lines.push(`Le prix monte depuis une semaine (${fmtPct(st.trend)}) : si tu en as, c'est plutôt le moment de vendre.`);
+  }
+  return { tag, cls, lines };
+}
+// I hold `qty` units and want to sell at Jita: now or later, and how?
+function adviseSell(id, qty){
+  const o = S.orders.get(id), st = marketStats(id);
+  const tax = (+$("fTax").value || 0) / 100, broker = (+$("fBroker").value || 0) / 100;
+  if (!st || !o) return { tag: "Liquidité ?", cls: "neutral", lines: ["Pas d'historique à Jita pour cet objet : impossible d'estimer la revente."], key: "unknown" };
+  const lines = [];
+  const thr = Math.max(0.04, st.vol);
+  const instant = o.buy ? o.buy * (1 - tax) : 0, listed = o.sell ? (o.sell - 0.01) * (1 - tax - broker) : 0;
+  let tag, cls, key;
+  if (o.buy && o.buy >= st.a30 * (1 - 0.5 * st.vol) && instant >= listed * 0.97){
+    tag = "Vente directe"; cls = "good"; key = "instant";
+    lines.push(`Les ordres d'achat de Jita paient ${fmtIsk(o.buy)}, proche de la moyenne 30 j (${fmtIsk(st.a30)}) : vends tout de suite, sans frais de courtage ni attente.`);
+  } else if (st.trend < -thr){
+    tag = "Vendre vite"; cls = "warn"; key = "fast";
+    lines.push(`Le prix baisse (${fmtPct(st.trend)} sur 7 j par rapport à 30 j) : mets en vente au plus bas actuel (${fmtIsk(o.sell)}) plutôt que d'attendre.`);
+  } else if (o.sell && o.sell < st.a30 * (1 - thr) && st.trend >= -0.01){
+    tag = "Attendre"; cls = "warn"; key = "wait";
+    lines.push(`Le prix de vente actuel (${fmtIsk(o.sell)}) est ${fmtPct((st.a30 - o.sell) / st.a30, false)} sous la moyenne 30 j, et la tendance n'est pas à la baisse : le prix revient en général vers ${fmtIsk(st.a30)}. Attendre quelques jours ou poser un ordre plus haut peut rapporter plus.`);
+  } else {
+    tag = "Ordre de vente"; cls = "good"; key = "order";
+    lines.push(`Pose un ordre de vente juste sous le plus bas actuel (${fmtIsk(o.sell)}). Les ordres d'achat (${fmtIsk(o.buy)}) paient ${o.sell && o.buy ? fmtPct((o.sell - o.buy) / o.sell, false) + " de moins" : "moins"}.`);
+  }
+  if (qty){
+    const days = qty / Math.max(st.dv * 0.25, 1e-9);
+    const d = days < 1 ? "moins d'un jour" : `environ ${Math.ceil(days)} jour${days >= 2 ? "s" : ""}`;
+    lines.push(`Il se vend ${fmtNum(st.dv)} unités par jour à Jita. Pour écouler ${fmtNum(qty)} unités en captant ~25 % des ventes : ${d}.`);
+    if (days > 7 && key !== "instant"){ tag = "Marché saturé"; cls = "bad"; key = "sat"; lines.push("C'est beaucoup trop pour ce marché : tu ferais baisser le prix. Prends moins d'unités."); }
+  }
+  return { tag, cls, lines, key };
+}
+const pill = a => `<span class="pill ${a.cls}">${esc(a.tag)}</span>`;
+
+/* ---------- inter-hub arbitrage ---------- */
+function arb(id, srcK, dstK, mode, minMargin, tax, broker){
+  const src = S.hubOrders[srcK]?.get(id), dst = S.hubOrders[dstK]?.get(id);
+  if (!src || !src.sells.length || !dst) return null;
+  let units = 0, cost = 0, revenue = 0, maxBuy = 0, sellAt = 0;
+  if (mode === "instant"){
+    const sells = src.sells.map(x => x.slice()), buys = dst.buys.map(x => x.slice());
+    let i = 0, j = 0;
+    while (i < sells.length && j < buys.length){
+      const [sp] = sells[i], [bp] = buys[j];
+      if (bp * (1 - tax) < sp * (1 + minMargin)) break;
+      const q = Math.min(sells[i][1], buys[j][1]);
+      units += q; cost += q * sp; revenue += q * bp * (1 - tax); maxBuy = sp; sellAt = bp;
+      sells[i][1] -= q; buys[j][1] -= q;
+      if (!sells[i][1]) i++; if (!buys[j][1]) j++;
+    }
+  } else {
+    let P = dst.sell ? dst.sell - 0.01 : null;
+    const st = dstK === "jita" ? marketStats(id) : null;
+    if (!P && st) P = st.a30;
+    if (!P) return null;
+    const net = P * (1 - tax - broker);
+    let cap = st ? Math.max(1, Math.round(st.dv)) : Infinity; // ~1 day of Jita volume
+    for (const [sp, sv] of src.sells){
+      if (net < sp * (1 + minMargin) || cap <= 0) break;
+      const q = Math.min(sv, cap);
+      units += q; cost += q * sp; revenue += q * net; maxBuy = sp; cap -= q;
+    }
+    sellAt = P;
+  }
+  if (!units) return null;
+  const profit = revenue - cost;
+  return { units, cost, revenue, profit, roi: profit / cost, unitProfit: profit / units, maxBuy, sellAt, src: srcK, dst: dstK };
+}
+function hubRowsFor(srcList, dstK, opts){
+  const out = [];
+  for (const id of (S.hubOrders[dstK] || new Map()).keys()){
+    if (S.cats && !S.cats.has(catKey(id))) continue;
+    let best = null;
+    for (const sk of srcList){
+      if (sk === dstK) continue;
+      const r = arb(id, sk, dstK, opts.mode, opts.minMargin, opts.tax, opts.broker);
+      if (r && r.profit >= opts.profitMin && (!best || r.profit > best.profit)) best = r;
+      if (r && opts.allPairs && r.profit >= opts.profitMin) out.push({ id, ...r });
+    }
+    if (best && !opts.allPairs) out.push({ id, ...best });
+  }
+  return out;
+}
+
 /* ---------- 3. history ---------- */
 async function loadHistory(){
   if (!S.hist.size) S.hist = await idbGetAll("hist");
@@ -572,7 +802,34 @@ function periodStats(h, days){
   return { avg: isk / vol, dailyIsk: isk / days, dailyVol: vol / days, daysActive: Math.min(n, days) };
 }
 
+function hubOpts(){
+  return {
+    mode: $("hMode").value,
+    minMargin: (+$("fMin").value || 0) / 100,
+    tax: (+$("fTax").value || 0) / 100, broker: (+$("fBroker").value || 0) / 100,
+    profitMin: parseIsk($("hProfitMin").value) || 0
+  };
+}
+function computeHubRows(){
+  const dst = $("hDst").value, srcSel = $("hSrc").value;
+  const srcList = srcSel === "all" ? HUBS.map(h => h.k) : [srcSel];
+  const q = $("q").value.trim().toLowerCase();
+  const rows = hubRowsFor(srcList, dst, hubOpts()).map(r => {
+    const name = S.names.get(r.id) || ("#" + r.id);
+    const j = jumps(r.src, dst), v = S.vols.get(r.id);
+    const adv = dst === "jita" ? adviseSell(r.id, r.units) : null;
+    return { ...r, name, jumps: j ?? null, m3: v != null ? v * r.units : null, ppj: j ? r.profit / j : r.profit, adv, advTag: adv ? adv.tag : "" };
+  }).filter(r => !q || r.name.toLowerCase().includes(q));
+  const { k, dir } = S.sort.hub;
+  rows.sort((a, b) => {
+    const x = a[k], y = b[k];
+    if (typeof x === "string") return dir * x.localeCompare(y, "fr");
+    return dir * ((x ?? -Infinity) - (y ?? -Infinity));
+  });
+  return rows;
+}
 function computeRows(){
+  if (S.tab === "hub") return computeHubRows();
   const days = S.period, minIsk = +$("selVol").value, minDays = +$("selDays").value * days;
   const q = $("q").value.trim().toLowerCase();
   const tax = (+$("fTax").value || 0) / 100, broker = (+$("fBroker").value || 0) / 100, minMargin = (+$("fMin").value || 0) / 100;
@@ -595,6 +852,10 @@ function computeRows(){
       if (!o.sell) continue;
       r.disc = (st.avg - o.sell) / st.avg;
       if (dMin != null && r.disc < dMin) continue;
+      for (const h of HUBS){ if (h.k === "jita") continue; const b = S.hubOrders[h.k]?.get(id);
+        if (b && b.sell && b.sell < o.sell * 0.97){ const gap = (o.sell - b.sell) / o.sell; if (!r.cheaper || gap > r.cheaper.gap) r.cheaper = { k: h.k, gap, price: b.sell }; } }
+      r.cheaperGap = r.cheaper ? r.cheaper.gap : 0;
+      r.adv = adviseBuy(id); r.advTag = r.adv.tag;
       r.flag = r.disc > 0.5 || (r.disc > 0.25 && o.sellQty * o.sell < st.dailyIsk * 0.02);
     } else {
       if (!o.sell || !o.buy) continue;
@@ -621,7 +882,11 @@ function computeRows(){
 const COLS = {
   buy: [
     ["name", "Objet"], ["sell", "Vente la moins chère"], ["avg", "Moyenne période"], ["disc", "Sous la moyenne"],
-    ["sellQty", "Qté à ce prix"], ["dailyIsk", "Échangé / jour"], ["daysActive", "Jours actifs"]
+    ["sellQty", "Qté à ce prix"], ["dailyIsk", "Échangé / jour"], ["daysActive", "Jours actifs"], ["cheaperGap", "Moins cher ailleurs"], ["advTag", "Conseil"]
+  ],
+  hub: [
+    ["name", "Objet"], ["src", "Acheter à"], ["maxBuy", "Prix d'achat max."], ["sellAt", "Prix de revente"], ["units", "Unités"],
+    ["profit", "Profit total"], ["roi", "Marge"], ["jumps", "Sauts"], ["m3", "Volume"], ["ppj", "Profit / saut"], ["advTag", "Conseil revente"]
   ],
   trade: [
     ["name", "Objet"], ["buy", "Meilleur achat"], ["sell", "Meilleure vente"], ["margin", "Marge nette"],
@@ -640,7 +905,8 @@ function cell(r, k){
       const path = c && g ? (c[1] !== c[0] ? `${g[c[0]]?.n || ""} › ${g[c[1]]?.n || ""}` : g[c[0]]?.n || "") : "";
       return `${esc(r.name)}${r.flag ? '<span class="flag" title="Écart inhabituel ou faible quantité : vérifie en jeu">à vérifier</span>' : ""}${path ? `<span class="catpath">${esc(path)}</span>` : ""}`;
     }
-    case "sell": case "buy": case "avg": case "profit": return k === "profit" ? `<span class="${r.profit > 0 ? "pos" : "neg"}">${fmtIsk(r.profit)}</span>` : fmtIsk(r[k]);
+    case "profit": if (S.tab === "hub") return `<span class="pos">${fmtIsk(r.profit)}</span>`;
+    case "sell": case "buy": case "avg": return k === "profit" ? `<span class="${r.profit > 0 ? "pos" : "neg"}">${fmtIsk(r.profit)}</span>` : fmtIsk(r[k]);
     case "disc": {
       const w = Math.max(0, Math.min(1, r.disc / 0.3)) * 100;
       return `<span class="deal"><span class="${r.disc > 0 ? "pos" : "neg"}">${fmtPct(-r.disc)}</span><span class="track"><i style="width:${w}%"></i></span></span>`;
@@ -650,6 +916,14 @@ function cell(r, k){
     case "sellQty": case "dailyVol": return fmtNum(r[k]);
     case "dailyIsk": case "potential": return fmtIsk(r[k]);
     case "daysActive": return `${r.daysActive} / ${S.period}`;
+    case "src": return `<span class="hubtag">${HUB[r.src].n}</span>`;
+    case "maxBuy": case "sellAt": case "ppj": return fmtIsk(r[k]);
+    case "units": return fmtNum(r.units);
+    case "roi": return `<span class="pos">${fmtPct(r.roi, false)}</span>`;
+    case "jumps": return r.jumps == null ? "—" : r.jumps;
+    case "m3": return r.m3 == null ? '<span class="dim">…</span>' : fmtNum(r.m3) + " m³";
+    case "cheaperGap": return r.cheaper ? `<span class="pos">${HUB[r.cheaper.k].n} ${fmtPct(-r.cheaper.gap)}</span>` : '<span class="dim">—</span>';
+    case "advTag": { const a = r.adv || (S.tab === "buy" ? adviseBuy(r.id) : null); return a ? pill(a) : '<span class="dim">—</span>'; }
   }
   return "";
 }
@@ -666,24 +940,53 @@ function render(){
       : `<strong>Aucune donnée pour l'instant</strong>Clique sur « Lancer l'analyse ». Les premiers résultats apparaissent dès que l'historique arrive, pendant que le reste se charge.`;
   } else empty.hidden = true;
   $("moreBox").hidden = S.rows.length <= S.shown;
-  $("tabNote").textContent = S.tab === "buy"
+  if (S.tab === "hub"){
+    const ids = rows.filter(r => !S.vols.has(r.id)).map(r => r.id);
+    if (ids.length) ensureVols(ids);
+  }
+  $("tabNote").textContent = S.tab === "hub"
+    ? `Objets moins chers dans un hub que leur prix de revente à ${HUB[$("hDst").value].n}, taxes déduites. Les unités tiennent compte de la profondeur des ordres${$("hMode").value === "order" ? " et sont limitées à environ une journée de ventes à Jita" : ""}. ${S.rows.length.toLocaleString("fr-FR")} résultats.`
+    : S.tab === "buy"
     ? `Objets dont la vente la moins chère à Jita IV-4 est sous le prix moyen des ${periodLabel()}. ${S.rows.length.toLocaleString("fr-FR")} résultats.`
     : `Écart entre le meilleur ordre d'achat et la meilleure vente, taxes et courtage déduits. « Potentiel / jour » suppose que tu captes 10 % du volume quotidien. ${S.rows.length.toLocaleString("fr-FR")} résultats.`;
 }
 const periodLabel = () => S.period === 1 ? "dernières 24 h" : S.period === 365 ? "12 derniers mois" : `${S.period} derniers jours`;
 
 /* ---------- drawer ---------- */
-function openDrawer(r){
+function openDrawer(row){
+  const id = row.id, o = S.orders.get(id) || {}, st = periodStats(S.hist.get(id), S.period) || {};
+  const r = { id, name: S.names.get(id) || row.name || ("#" + id), ...o, ...st, units: row.units, src: row.src };
   S.selected = r;
   $("dName").textContent = r.name;
+  // advice
+  const b = adviseBuy(id), sl = adviseSell(id, row.units || 0);
+  let html = "";
+  if (row.src && row.src !== "jita"){
+    html += `<div class="head"><span class="pill good">Importer</span><strong>Acheter à ${HUB[row.src].n}, revendre à ${HUB[row.dst].n}</strong></div>
+      <ul><li>Achète jusqu'à ${fmtNum(row.units)} unités à ${HUB[row.src].n}, sans dépasser ${fmtIsk(row.maxBuy)} l'unité (coût ≈ ${fmtIsk(row.cost)}).</li>
+      <li>Profit estimé : ${fmtIsk(row.profit)} (${fmtPct(row.roi, false)}) après taxes${row.jumps != null ? `, pour ${row.jumps} sauts en high-sec` : ""}.</li></ul>`;
+  }
+  html += `<div class="head">${pill(b)}<strong>Acheter à Jita maintenant ?</strong></div><ul>${b.lines.map(l => `<li>${esc(l)}</li>`).join("")}</ul>`;
+  html += `<div class="head">${pill(sl)}<strong>Revendre à Jita : maintenant ou plus tard ?</strong></div><ul>${sl.lines.map(l => `<li>${esc(l)}</li>`).join("")}</ul>`;
+  $("dAdvice").innerHTML = html;
   const kv = [
     ["Vente la moins chère", fmtIsk(r.sell)], ["Meilleur achat", fmtIsk(r.buy)],
-    ["Moyenne " + (S.period === 1 ? "hier" : S.period + " j"), fmtIsk(r.avg)], ["Écart vente / moyenne", fmtPct((r.sell - r.avg) / r.avg)],
-    ["Qté à moins de 2 % du min.", fmtNum(r.sellQty)], ["Ordres vente / achat", `${r.nSell} / ${r.nBuy}`],
-    ["Échangé / jour", fmtIsk(r.dailyIsk) + " ISK"], ["Unités / jour", fmtNum(r.dailyVol)]
+    ["Moyenne " + (S.period === 1 ? "hier" : S.period + " j"), fmtIsk(r.avg)], ["Écart vente / moyenne", r.avg && r.sell ? fmtPct((r.sell - r.avg) / r.avg) : "—"],
+    ["Qté à moins de 2 % du min.", fmtNum(r.sellQty)], ["Ordres vente / achat", `${r.nSell ?? 0} / ${r.nBuy ?? 0}`],
+    ["Échangé / jour", r.dailyIsk ? fmtIsk(r.dailyIsk) + " ISK" : "—"], ["Unités / jour", fmtNum(r.dailyVol)]
   ];
   $("dKv").innerHTML = kv.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join("");
-  $("dLinks").innerHTML = `<a href="https://evetycoon.com/market/${r.id}" target="_blank" rel="noopener">Voir sur EVE Tycoon</a><a href="https://everef.net/type/${r.id}" target="_blank" rel="noopener">Fiche EVE Ref</a>`;
+  // hubs table
+  const js = S.orders.get(id)?.sell;
+  const books = HUBS.map(h => ({ h, b: S.hubOrders[h.k]?.get(id) }));
+  const cheapest = books.filter(x => x.b?.sell).sort((x, y) => x.b.sell - y.b.sell)[0];
+  $("dHubs").innerHTML = books.map(({ h, b }) => {
+    if (!S.hubOrders[h.k]) return `<tr><td>${h.n}</td><td colspan="5" class="dim">Non chargé</td></tr>`;
+    const gap = b?.sell && js ? (b.sell - js) / js : null;
+    return `<tr class="${cheapest && cheapest.h === h && Object.keys(S.hubOrders).length > 1 ? "best" : ""}"><td>${h.n}</td><td>${fmtIsk(b?.sell)}</td><td>${fmtNum(b?.sellQty)}</td><td>${fmtIsk(b?.buy)}</td>
+      <td class="${gap == null || h.k === "jita" ? "dim" : gap < 0 ? "pos" : "neg"}">${h.k === "jita" ? "réf." : fmtPct(gap)}</td><td>${h.k === "jita" ? "0" : jumps("jita", h.k) ?? "—"}</td></tr>`;
+  }).join("");
+  $("dLinks").innerHTML = `<a href="https://evetycoon.com/market/${id}" target="_blank" rel="noopener">Voir sur EVE Tycoon</a><a href="https://everef.net/type/${id}" target="_blank" rel="noopener">Fiche EVE Ref</a>`;
   $("drawer").classList.add("open"); $("drawer").setAttribute("aria-hidden", "false");
   $("tip").hidden = true;
   drawChart(r);
@@ -774,6 +1077,77 @@ function chartHover(e){
 }
 function chartLeave(){ $("tip").hidden = true; if (S.selected) drawChart(S.selected); }
 
+/* ---------- cargo plan ---------- */
+async function computePlan(){
+  const dst = $("hDst").value;
+  const budget = parseIsk($("hBudget").value) || Infinity, cargo = +$("hCargo").value || Infinity;
+  const box = $("plan"); box.hidden = false;
+  if (budget === Infinity && cargo === Infinity){
+    S.plan = { empty: true };
+    box.innerHTML = `<h3>Meilleur chargement</h3><div class="others">Indique ton budget, la capacité de ta soute en m³, ou les deux, puis relance.</div>`;
+    return;
+  }
+  if (!Object.keys(S.hubOrders).length){ box.innerHTML = `<h3>Meilleur chargement</h3><div class="others">Les ordres des hubs ne sont pas encore chargés.</div>`; return; }
+  box.innerHTML = `<h3>Meilleur chargement</h3><div class="others">Calcul en cours, récupération du volume des objets…</div>`;
+  const opts = hubOpts();
+  const srcs = HUBS.filter(h => h.k !== dst && S.hubOrders[h.k]).map(h => h.k);
+  const cands = {};
+  for (const sk of srcs) cands[sk] = hubRowsFor([sk], dst, opts).sort((a, b) => b.profit - a.profit).slice(0, 250);
+  await ensureVols(Object.values(cands).flat().map(r => r.id));
+  while (volRunning) await sleep(200);
+  const plans = srcs.map(sk => {
+    let bLeft = budget, cLeft = cargo; const items = [];
+    const scored = cands[sk].filter(r => S.vols.get(r.id) > 0).map(r => {
+      const v = S.vols.get(r.id), uc = r.cost / r.units, up = r.profit / r.units;
+      const use = Math.max(cargo === Infinity ? 0 : v / cargo, budget === Infinity ? 0 : uc / budget);
+      return { r, v, uc, up, score: up / (use || 1e-12) };
+    }).sort((a, b) => b.score - a.score);
+    for (const c of scored){
+      const take = Math.min(c.r.units, Math.floor(bLeft / c.uc), Math.floor(cLeft / c.v));
+      if (take <= 0) continue;
+      items.push({ id: c.r.id, name: S.names.get(c.r.id) || ("#" + c.r.id), units: take, maxBuy: c.r.maxBuy, cost: take * c.uc, m3: take * c.v, profit: take * c.up, sellAt: c.r.sellAt });
+      bLeft -= take * c.uc; cLeft -= take * c.v;
+      if (bLeft < 1 || cLeft < 0.01) break;
+    }
+    const sum = k => items.reduce((a, x) => a + x[k], 0);
+    const trip = (jumps("jita", sk) ?? 0) + (jumps(sk, dst) ?? 0);
+    return { src: sk, items, cost: sum("cost"), m3: sum("m3"), profit: sum("profit"), trip };
+  }).filter(p => p.items.length).sort((a, b) => b.profit - a.profit);
+  S.plan = { plans, dst };
+  renderPlan();
+}
+function renderPlan(){
+  const box = $("plan"), P = S.plan;
+  if (!P || P.empty) return;
+  if (!P.plans.length){ box.innerHTML = `<h3>Meilleur chargement</h3><div class="others">Aucun achat rentable avec ces réglages. Essaie une marge minimum plus basse ou un autre hub de revente.</div>`; return; }
+  const p = P.plans[0], dn = HUB[P.dst].n, sn = HUB[p.src].n;
+  box.innerHTML = `<h3>Meilleur chargement : acheter à ${sn}, revendre à ${dn}</h3>
+    <div class="summary">
+      <div><span>Profit estimé</span><b class="pos">${fmtIsk(p.profit)}</b></div>
+      <div><span>Investissement</span><b>${fmtIsk(p.cost)}</b></div>
+      <div><span>Marge</span><b>${fmtPct(p.profit / p.cost, false)}</b></div>
+      <div><span>Volume</span><b>${fmtNum(p.m3)} m³</b></div>
+      <div><span>Trajet depuis Jita</span><b>${p.trip ? p.trip + " sauts" : "—"}</b></div>
+      <div><span>Profit / saut</span><b>${p.trip ? fmtIsk(p.profit / p.trip) : "—"}</b></div>
+    </div>
+    <div class="tbl"><table><thead><tr><th>Objet</th><th>Unités</th><th>Prix max.</th><th>Coût</th><th>Volume</th><th>Revente</th><th>Profit</th></tr></thead><tbody>
+    ${p.items.map(x => `<tr data-id="${x.id}"><td>${esc(x.name)}</td><td>${fmtNum(x.units)}</td><td>${fmtIsk(x.maxBuy)}</td><td>${fmtIsk(x.cost)}</td><td>${fmtNum(x.m3)} m³</td><td>${fmtIsk(x.sellAt)}</td><td class="pos">${fmtIsk(x.profit)}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="actions"><button class="btn" id="planCopy" type="button">Copier la liste d'achat</button></div>
+    ${P.plans.length > 1 ? `<div class="others">Autres hubs : ${P.plans.slice(1).map(o => `${HUB[o.src].n} ${fmtIsk(o.profit)} (${o.trip || "?"} sauts)`).join(" · ")}</div>` : ""}
+    <div class="others">Estimation au prix actuel des ordres. Les prix bougent pendant le trajet : vérifie les prix max. en jeu avant d'acheter. La liste copiée se colle dans « Achat multiple » du marché.</div>`;
+  $("planCopy").onclick = async () => {
+    const txt = p.items.map(x => `${x.name}\t${x.units}`).join("\n");
+    try{ await navigator.clipboard.writeText(txt); $("planCopy").textContent = "Copié"; }
+    catch(e){ $("planCopy").textContent = "Copie impossible"; }
+    setTimeout(() => { const b = $("planCopy"); if (b) b.textContent = "Copier la liste d'achat"; }, 1500);
+  };
+  box.querySelectorAll("tr[data-id]").forEach(tr => tr.onclick = () => {
+    const id = +tr.dataset.id, row = hubRowsFor([p.src], P.dst, hubOpts()).find(x => x.id === id);
+    openDrawer(row ? { ...row, jumps: jumps(p.src, P.dst) } : { id });
+  });
+}
+
 /* ---------- flow ---------- */
 function setRunning(on){
   S.running = on; $("btnScan").disabled = on; $("btnOrders").disabled = on; $("btnStop").disabled = !on;
@@ -783,7 +1157,8 @@ async function scan(full){
   if (S.running) return;
   S.stop = false; setRunning(true); msg("");
   try{
-    await loadOrders(); render();
+    await loadOrders(true); render();
+    loadRoutes().then(render);
     await loadNames(); render();
     try{ await loadGroups(); }catch(e){ $("nNames").textContent = "Catégories indisponibles pour l'instant (" + e.message + ")"; }
     render();
@@ -860,9 +1235,26 @@ $("chart").addEventListener("pointerleave", chartLeave);
 let qT; $("q").addEventListener("input", () => { clearTimeout(qT); qT = setTimeout(() => { S.shown = 200; render(); }, 150); });
 const setTab = t => {
   S.tab = t; S.shown = 200;
-  $("tabBuy").setAttribute("aria-selected", String(t === "buy")); $("tabTrade").setAttribute("aria-selected", String(t === "trade"));
-  $("fees").hidden = t !== "trade"; $("ctlDisc").hidden = t !== "buy"; LS.set("tab", t); render();
+  $("tabBuy").setAttribute("aria-selected", String(t === "buy")); $("tabTrade").setAttribute("aria-selected", String(t === "trade")); $("tabHub").setAttribute("aria-selected", String(t === "hub"));
+  $("fees").hidden = t === "buy"; $("ctlDisc").hidden = t !== "buy"; $("hubCtl").hidden = t !== "hub"; $("plan").hidden = t !== "hub" || !S.plan;
+  LS.set("tab", t); render();
 };
+$("tabHub").onclick = () => setTab("hub");
+HUBS.forEach(h => {
+  $("hSrc").insertAdjacentHTML("beforeend", `<option value="${h.k}">${h.n}</option>`);
+  $("hDst").insertAdjacentHTML("beforeend", `<option value="${h.k}">${h.n}</option>`);
+});
+["hSrc", "hDst", "hMode", "hProfitMin", "hBudget", "hCargo"].forEach(id => {
+  const el = $(id); const v = LS.get(id, null); if (v != null) el.value = v;
+  el.dataset.applied = el.value;
+  let t;
+  const apply = () => { if (el.dataset.applied === el.value) return; el.dataset.applied = el.value; LS.set(id, el.value); S.shown = 200;
+    if (["hBudget", "hCargo"].includes(id)) return; S.plan = null; $("plan").hidden = true; render(); };
+  el.addEventListener("change", apply);
+  if (el.tagName === "INPUT") el.addEventListener("input", () => { clearTimeout(t); t = setTimeout(apply, 400); });
+});
+if (!$("hDst").value) $("hDst").value = "jita";
+$("btnPlan").onclick = () => computePlan();
 $("tabBuy").onclick = () => setTab("buy"); $("tabTrade").onclick = () => setTab("trade");
 $("thead").addEventListener("click", e => {
   const th = e.target.closest("th"); if (!th) return;
