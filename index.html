@@ -23,6 +23,7 @@
   --bg:#eef1f4; --panel:#ffffff; --panel2:#f5f7f9; --line:#d7dee5; --fg:#18222c; --muted:#5d6b78;
   --accent:#a8670f; --accent-ink:#fff8ec; --good:#1d8a57; --bad:#c0392b; --warn:#9a7a10; color-scheme:light}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font:14px/1.45 var(--f-body);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
@@ -69,10 +70,48 @@ input[type=text]{width:220px;max-width:100%}
 .tabnote{font-size:13px;color:var(--muted);margin:0}
 .fees{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
 
-.tablebox{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px}
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:860px}
+.tablebox{overflow:auto;max-height:calc(100vh - 60px);max-height:calc(100dvh - 60px);background:var(--panel);border:1px solid var(--line);border-radius:6px;overscroll-behavior:contain}
+table{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;min-width:860px}
 th{font:600 12px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:right;
-  padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;background:var(--panel2);position:sticky;top:0}
+  padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;background:var(--panel2);position:sticky;top:0;z-index:2}
+th:first-child{left:0;z-index:3}
+td:first-child{position:sticky;left:0;background:var(--panel);z-index:1}
+tbody tr:hover td:first-child{background:var(--panel2)}
+
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.filters input[type=text].isk{width:110px;font-family:var(--f-mono)}
+.ctl .hint{font-size:11px;color:var(--muted)}
+.catbtn{display:inline-flex;align-items:center;gap:8px}
+.catbtn b{font-family:var(--f-mono);font-weight:500;background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:0 6px;font-size:12px}
+.reset{background:none;border:0;color:var(--accent);font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:8px 4px}
+
+.catpanel{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;max-height:min(70vh,640px)}
+.cathead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
+.cathead strong{font:700 18px var(--f-display);letter-spacing:.08em;text-transform:uppercase}
+.cathead .actions{gap:6px}
+.cathead .btn{padding:6px 10px;font-size:13px}
+.catgrid{overflow-y:auto;padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;align-items:start}
+.cat{border:1px solid var(--line);border-radius:5px;background:var(--panel2);min-width:0}
+.cat > .row{display:flex;align-items:center;gap:8px;padding:8px 10px}
+.cat > .row label{flex:1;min-width:0;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.cat .count{font:12px var(--f-mono);color:var(--muted)}
+.cat .toggle{background:none;border:0;color:var(--muted);cursor:pointer;font:600 16px var(--f-mono);width:24px;height:24px;border-radius:3px}
+.cat .toggle:hover{color:var(--fg);background:var(--line)}
+.subs{display:flex;flex-direction:column;padding:0 10px 8px 30px;gap:2px}
+.subs label{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:2px 0}
+.subs label span:first-of-type{flex:1;min-width:0}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;margin:0;flex:none}
+.catnote{padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+
+/* chart */
+.chartbox{position:relative;touch-action:pan-y}
+.tip{position:absolute;pointer-events:none;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:8px 10px;
+  font:12px/1.5 var(--f-mono);box-shadow:0 6px 18px rgba(0,0,0,.3);min-width:170px;z-index:2}
+.tip .d{font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.tip div{display:flex;justify-content:space-between;gap:14px}
+.tip span{color:var(--muted)}
+.catpath{display:block;font-size:12px;color:var(--muted);margin-top:1px}
 th:first-child,td:first-child{text-align:left}
 th[aria-sort] ::after{content:""}
 th.sorted{color:var(--accent)}
@@ -147,6 +186,24 @@ footer{font-size:12px;color:var(--muted);max-width:75ch}
     <div class="ctl"><label for="q">Rechercher</label><input type="text" id="q" placeholder="Tritanium, PLEX, Gila…" autocomplete="off"></div>
   </section>
 
+  <section class="filters" aria-label="Filtres">
+    <div class="ctl"><span class="lbl">Catégories</span><button class="btn catbtn" id="btnCats" type="button" aria-expanded="false" aria-controls="catPanel">Toutes</button></div>
+    <div class="ctl"><label for="fPriceMin">Prix de vente min.</label><input type="text" class="isk" id="fPriceMin" placeholder="ex. 1m" title="En ISK, k / m / b acceptés : 500k, 1m, 1.5b" autocomplete="off" inputmode="decimal"></div>
+    <div class="ctl"><label for="fPriceMax">Prix de vente max.</label><input type="text" class="isk" id="fPriceMax" placeholder="ex. 500m" title="En ISK, k / m / b acceptés : 500k, 1m, 1.5b" autocomplete="off" inputmode="decimal"></div>
+    <div class="ctl"><label for="fQtyMin">Qté dispo min.</label><input type="number" id="fQtyMin" min="0" step="1" placeholder="0"></div>
+    <div class="ctl" id="ctlDisc"><label for="fDiscMin">Sous la moyenne min. %</label><input type="number" id="fDiscMin" step="1" placeholder="0"></div>
+    <div class="ctl"><label for="fOrdersMin">Ordres de vente min.</label><input type="number" id="fOrdersMin" min="0" step="1" placeholder="0"></div>
+    <div class="ctl"><button class="reset" id="btnReset" type="button">Réinitialiser</button></div>
+  </section>
+
+  <section class="catpanel" id="catPanel" hidden>
+    <div class="cathead"><strong>Catégories du marché</strong>
+      <div class="actions"><button class="btn" id="catAll" type="button">Tout cocher</button><button class="btn" id="catNone" type="button">Tout décocher</button><button class="btn primary" id="catClose" type="button">Valider</button></div>
+    </div>
+    <div class="catgrid" id="catGrid"><div class="dim">Chargement de l'arborescence du marché…</div></div>
+    <div class="catnote">Même classement que le marché en jeu. Le chiffre indique le nombre d'objets en vente à Jita dans chaque catégorie.</div>
+  </section>
+
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabBuy" aria-selected="true" type="button">Bonnes affaires</button>
     <button class="tab" role="tab" id="tabTrade" aria-selected="false" type="button">Trading</button>
@@ -170,8 +227,12 @@ footer{font-size:12px;color:var(--muted);max-width:75ch}
   <div class="dhead"><h2 id="dName">—</h2><button class="btn" id="dClose" type="button">Fermer</button></div>
   <div class="actions"><button class="btn" id="dCopy" type="button">Copier le nom</button></div>
   <div class="kv" id="dKv"></div>
-  <canvas id="chart" width="1040" height="480"></canvas>
-  <div class="legend"><span><i style="background:var(--accent)"></i>Prix moyen journalier</span><span><i style="background:var(--muted)"></i>Moyenne de la période</span><span><i style="background:var(--good)"></i>Vente la moins chère actuelle</span><span><i style="background:var(--bad)"></i>Meilleur achat actuel</span></div>
+  <div class="seg" id="segChart" aria-label="Période du graphique">
+    <button type="button" data-d="7">7 j</button><button type="button" data-d="14">14 j</button><button type="button" data-d="30">30 j</button>
+    <button type="button" data-d="90">3 mois</button><button type="button" data-d="180">6 mois</button><button type="button" data-d="365">1 an</button><button type="button" data-d="9999">Tout</button>
+  </div>
+  <div class="chartbox" id="chartBox"><canvas id="chart" width="1040" height="480"></canvas><div class="tip" id="tip" hidden></div></div>
+  <div class="legend"><span><i style="background:var(--accent)"></i>Prix moyen journalier</span><span><i style="background:var(--accent);opacity:.25;height:8px"></i>Plus bas / plus haut du jour</span><span><i style="background:var(--muted)"></i>Moyenne du graphique</span><span><i style="background:var(--good)"></i>Vente la moins chère actuelle</span><span><i style="background:var(--bad)"></i>Meilleur achat actuel</span></div>
   <div class="links" id="dLinks"></div>
 </aside>
 
@@ -193,8 +254,8 @@ function idb(){
   if (dbp) return dbp;
   dbp = new Promise(res => {
     try{
-      const r = indexedDB.open("seisme", 1);
-      r.onupgradeneeded = () => { r.result.createObjectStore("hist"); r.result.createObjectStore("names"); };
+      const r = indexedDB.open("seisme", 2);
+      r.onupgradeneeded = () => { for (const s of ["hist", "names", "meta"]) if (!r.result.objectStoreNames.contains(s)) r.result.createObjectStore(s); };
       r.onsuccess = () => res(r.result);
       r.onerror = () => res(null);
     }catch(e){ res(null); }
@@ -217,6 +278,13 @@ async function idbPut(store, key, val){
   const db = await idb(); if (!db) return;
   try{ db.transaction(store, "readwrite").objectStore(store).put(val, key); }catch(e){}
 }
+async function idbGet(store, key){
+  const db = await idb(); if (!db) return undefined;
+  return new Promise(res => {
+    try{ const rq = db.transaction(store, "readonly").objectStore(store).get(key); rq.onsuccess = () => res(rq.result); rq.onerror = () => res(undefined); }
+    catch(e){ res(undefined); }
+  });
+}
 async function idbPutMany(store, entries){
   const db = await idb(); if (!db) return;
   try{ const st = db.transaction(store, "readwrite").objectStore(store); for (const [k,v] of entries) st.put(v, k); }catch(e){}
@@ -233,7 +301,12 @@ const S = {
   period: LS.get("period", 30),
   sort: { buy: { k: "disc", dir: -1 }, trade: { k: "margin", dir: -1 } },
   shown: 200,
-  rows: [], selected: null
+  rows: [], selected: null,
+  groups: null,        // {id: {n: name, p: parentId, types: [...]}}
+  typeCat: new Map(),  // typeId -> [rootId, subId]
+  cats: LS.get("cats", null) ? new Set(LS.get("cats", [])) : null, // selected sub keys "root:sub"; null = all
+  chartDays: LS.get("chartDays", 30),
+  chartPts: null
 };
 
 /* ---------- helpers ---------- */
@@ -250,6 +323,14 @@ function fmtIsk(v){
 }
 const fmtNum = v => v == null ? "—" : Math.round(v).toLocaleString("fr-FR");
 const fmtPct = (v, sign=true) => v == null || !isFinite(v) ? "—" : (sign && v > 0 ? "+" : "") + (v*100).toFixed(1).replace(".", ",") + " %";
+function parseIsk(s){
+  s = String(s || "").trim().toLowerCase().replace(/\s/g, "").replace(",", ".");
+  if (!s) return null;
+  const m = s.match(/^(\d*\.?\d+)\s*(k|m|b|md|t)?$/);
+  if (!m) return null;
+  const mult = { k: 1e3, m: 1e6, b: 1e9, md: 1e9, t: 1e12 }[m[2]] || 1;
+  return parseFloat(m[1]) * mult;
+}
 function lastDowntime(){
   const now = new Date();
   const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 11, 15));
@@ -339,6 +420,97 @@ async function loadNames(){
   $("nNames").textContent = "Noms à jour";
 }
 
+/* ---------- 2b. market groups (categories) ---------- */
+async function loadGroups(){
+  if (!S.groups){
+    const c = await idbGet("meta", "groups");
+    if (c && c.t > Date.now() - 7 * 864e5 && c.lang === "fr") S.groups = c.groups;
+  }
+  if (!S.groups){
+    $("nNames").textContent = "Chargement des catégories du marché (une fois par semaine)…";
+    const ids = (await getJSON(`${ESI}/markets/groups/?datasource=tranquility`)).data;
+    const groups = {}; let i = 0, done = 0;
+    const worker = async () => {
+      while (i < ids.length && !S.stop){
+        const id = ids[i++];
+        for (let t = 0; t < 3; t++){
+          try{
+            const g = (await getJSON(`${ESI}/markets/groups/${id}/?datasource=tranquility&language=fr`)).data;
+            groups[id] = { n: g.name, p: g.parent_group_id || 0, types: g.types || [] };
+            break;
+          }catch(e){ await sleep(800 * (t + 1)); }
+        }
+        if (++done % 50 === 0) $("nNames").textContent = `Catégories du marché : ${done} / ${ids.length}`;
+      }
+    };
+    await Promise.all(Array.from({ length: 20 }, worker));
+    if (S.stop) return;
+    S.groups = groups;
+    idbPut("meta", "groups", { t: Date.now(), lang: "fr", groups });
+  }
+  // map each type to [root, sub]
+  const G = S.groups, rootOf = {};
+  const chain = id => { const out = []; let g = id, guard = 0; while (g && G[g] && guard++ < 20){ out.unshift(+g); g = G[g].p; } return out; };
+  S.typeCat = new Map();
+  for (const id in G){
+    const c = rootOf[id] || (rootOf[id] = chain(id));
+    if (!c.length) continue;
+    const root = c[0], sub = c[1] || c[0];
+    for (const t of G[id].types) S.typeCat.set(t, [root, sub]);
+  }
+  $("nNames").textContent = "Noms et catégories à jour";
+  buildCatPanel();
+}
+
+const catKey = id => { const c = S.typeCat.get(id); return c ? c[0] + ":" + c[1] : "0:0"; };
+function catTree(){
+  // roots -> subs with counts of types currently on sale at Jita
+  const roots = new Map();
+  for (const [id, o] of S.orders){
+    if (!o.sell) continue;
+    const c = S.typeCat.get(id) || [0, 0];
+    let r = roots.get(c[0]); if (!r){ r = { id: c[0], n: c[0] ? (S.groups[c[0]]?.n || "#" + c[0]) : "Autres", count: 0, subs: new Map() }; roots.set(c[0], r); }
+    r.count++;
+    let s = r.subs.get(c[1]); if (!s){ s = { key: c[0] + ":" + c[1], n: c[1] === c[0] ? "Divers" : (S.groups[c[1]]?.n || "#" + c[1]), count: 0 }; r.subs.set(c[1], s); }
+    s.count++;
+  }
+  return [...roots.values()].sort((a, b) => a.n.localeCompare(b.n, "fr"))
+    .map(r => ({ ...r, subs: [...r.subs.values()].sort((a, b) => a.n.localeCompare(b.n, "fr")) }));
+}
+const allCatKeys = () => catTree().flatMap(r => r.subs.map(s => s.key));
+const isOn = key => !S.cats || S.cats.has(key);
+function buildCatPanel(){
+  if (!S.groups || !S.orders.size) return;
+  const open = new Set([...document.querySelectorAll(".cat[data-open='1']")].map(e => e.dataset.root));
+  const tree = catTree();
+  $("catGrid").innerHTML = tree.map(r => {
+    const on = r.subs.filter(s => isOn(s.key)).length;
+    const isOpen = open.has(String(r.id));
+    return `<div class="cat" data-root="${r.id}" data-open="${isOpen ? 1 : 0}">
+      <div class="row"><label><input type="checkbox" data-root="${r.id}" ${on === r.subs.length ? "checked" : ""} ${on > 0 && on < r.subs.length ? 'data-mixed="1"' : ""}><span>${esc(r.n)}</span></label>
+      <span class="count">${r.count}</span>
+      ${r.subs.length > 1 ? `<button class="toggle" type="button" data-toggle="${r.id}" aria-expanded="${isOpen}" aria-label="Voir les sous-catégories de ${esc(r.n)}">${isOpen ? "−" : "+"}</button>` : ""}</div>
+      ${r.subs.length > 1 ? `<div class="subs" ${isOpen ? "" : "hidden"}>${r.subs.map(s =>
+        `<label><input type="checkbox" data-key="${s.key}" ${isOn(s.key) ? "checked" : ""}><span>${esc(s.n)}</span><span class="count">${s.count}</span></label>`).join("")}</div>` : ""}
+    </div>`;
+  }).join("") || '<div class="dim">Aucune catégorie</div>';
+  $("catGrid").querySelectorAll("input[data-mixed]").forEach(i => i.indeterminate = true);
+  updateCatBtn();
+}
+function updateCatBtn(){
+  const all = allCatKeys().length;
+  if (!S.cats || S.cats.size >= all){ $("btnCats").innerHTML = "Toutes"; return; }
+  const roots = new Set([...S.cats].map(k => k.split(":")[0]));
+  $("btnCats").innerHTML = `Filtrées <b>${S.cats.size} / ${all}</b>`;
+  $("btnCats").title = roots.size + " catégorie(s) principale(s)";
+}
+function setCats(set){
+  const all = allCatKeys();
+  S.cats = set && set.size < all.length ? set : null;
+  LS.set("cats", S.cats ? [...S.cats] : null);
+  buildCatPanel(); S.shown = 200; render();
+}
+
 /* ---------- 3. history ---------- */
 async function loadHistory(){
   if (!S.hist.size) S.hist = await idbGetAll("hist");
@@ -393,19 +565,26 @@ async function loadHistory(){
 /* ---------- stats ---------- */
 function periodStats(h, days){
   if (!h || !h.rows.length) return null;
-  const cutoff = new Date(Date.now() - (days + 1) * 864e5).toISOString().slice(0, 10);
+  const cutoff = new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
   let isk = 0, vol = 0, n = 0;
   for (const [d, avg, v] of h.rows){ if (d >= cutoff){ isk += avg * v; vol += v; n++; } }
   if (!vol) return null;
-  return { avg: isk / vol, dailyIsk: isk / days, dailyVol: vol / days, daysActive: n };
+  return { avg: isk / vol, dailyIsk: isk / days, dailyVol: vol / days, daysActive: Math.min(n, days) };
 }
 
 function computeRows(){
   const days = S.period, minIsk = +$("selVol").value, minDays = +$("selDays").value * days;
   const q = $("q").value.trim().toLowerCase();
   const tax = (+$("fTax").value || 0) / 100, broker = (+$("fBroker").value || 0) / 100, minMargin = (+$("fMin").value || 0) / 100;
+  const pMin = parseIsk($("fPriceMin").value), pMax = parseIsk($("fPriceMax").value);
+  const qMin = +$("fQtyMin").value || 0, dMin = $("fDiscMin").value === "" ? null : (+$("fDiscMin").value) / 100, oMin = +$("fOrdersMin").value || 0;
   const out = [];
   for (const [id, o] of S.orders){
+    if (S.cats && !S.cats.has(catKey(id))) continue;
+    if (!o.sell) continue;
+    if (pMin != null && o.sell < pMin) continue;
+    if (pMax != null && o.sell > pMax) continue;
+    if (o.sellQty < qMin || o.nSell < oMin) continue;
     const st = periodStats(S.hist.get(id), days);
     if (!st) continue;
     if (st.dailyIsk < minIsk || st.daysActive < Math.floor(minDays)) continue;
@@ -415,6 +594,7 @@ function computeRows(){
     if (S.tab === "buy"){
       if (!o.sell) continue;
       r.disc = (st.avg - o.sell) / st.avg;
+      if (dMin != null && r.disc < dMin) continue;
       r.flag = r.disc > 0.5 || (r.disc > 0.25 && o.sellQty * o.sell < st.dailyIsk * 0.02);
     } else {
       if (!o.sell || !o.buy) continue;
@@ -455,7 +635,11 @@ function renderHead(){
 }
 function cell(r, k){
   switch(k){
-    case "name": return `${esc(r.name)}${r.flag ? '<span class="flag" title="Écart inhabituel ou faible quantité : vérifie en jeu">à vérifier</span>' : ""}`;
+    case "name": {
+      const c = S.typeCat.get(r.id), g = S.groups;
+      const path = c && g ? (c[1] !== c[0] ? `${g[c[0]]?.n || ""} › ${g[c[1]]?.n || ""}` : g[c[0]]?.n || "") : "";
+      return `${esc(r.name)}${r.flag ? '<span class="flag" title="Écart inhabituel ou faible quantité : vérifie en jeu">à vérifier</span>' : ""}${path ? `<span class="catpath">${esc(path)}</span>` : ""}`;
+    }
     case "sell": case "buy": case "avg": case "profit": return k === "profit" ? `<span class="${r.profit > 0 ? "pos" : "neg"}">${fmtIsk(r.profit)}</span>` : fmtIsk(r[k]);
     case "disc": {
       const w = Math.max(0, Math.min(1, r.disc / 0.3)) * 100;
@@ -501,40 +685,94 @@ function openDrawer(r){
   $("dKv").innerHTML = kv.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join("");
   $("dLinks").innerHTML = `<a href="https://evetycoon.com/market/${r.id}" target="_blank" rel="noopener">Voir sur EVE Tycoon</a><a href="https://everef.net/type/${r.id}" target="_blank" rel="noopener">Fiche EVE Ref</a>`;
   $("drawer").classList.add("open"); $("drawer").setAttribute("aria-hidden", "false");
+  $("tip").hidden = true;
   drawChart(r);
 }
 function closeDrawer(){ $("drawer").classList.remove("open"); $("drawer").setAttribute("aria-hidden", "true"); }
 function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
-function drawChart(r){
+function chartRows(r){
+  const h = S.hist.get(r.id); if (!h) return [];
+  if (S.chartDays >= 9999) return h.rows;
+  const cutoff = new Date(Date.now() - (S.chartDays + 1) * 864e5).toISOString().slice(0, 10);
+  return h.rows.filter(x => x[0] >= cutoff);
+}
+function drawChart(r, hover){
   const cv = $("chart"), ctx = cv.getContext("2d");
   const W = cv.width, H = cv.height, P = { l: 120, r: 24, t: 20, b: 50 };
   ctx.clearRect(0, 0, W, H);
-  const h = S.hist.get(r.id); if (!h) return;
-  const days = Math.max(S.period, 30);
-  const cutoff = new Date(Date.now() - (days + 1) * 864e5).toISOString().slice(0, 10);
-  const rows = h.rows.filter(x => x[0] >= cutoff);
-  if (rows.length < 2) return;
-  const vals = rows.map(x => x[1]).concat([r.avg, r.sell, r.buy].filter(v => v));
-  let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.08 || hi * 0.05; lo -= pad; hi += pad;
+  S.chartPts = null;
+  const rows = chartRows(r);
+  const muted = cssVar("--muted"), line = cssVar("--line"), acc = cssVar("--accent");
+  ctx.font = "22px " + cssVar("--f-mono");
+  if (rows.length < 2){
+    ctx.fillStyle = muted; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Pas assez d'historique sur cette période", W / 2, H / 2); return;
+  }
+  let isk = 0, vol = 0; for (const x of rows){ isk += x[1] * x[2]; vol += x[2]; }
+  const avg = vol ? isk / vol : null;
+  // scale on daily averages and current prices (daily highs/lows can contain absurd outliers)
+  const vals = rows.map(x => x[1]).concat([avg, r.sell, r.buy].filter(v => v));
+  let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.1 || hi * 0.05; lo = Math.max(0, lo - pad); hi += pad;
   const t0 = Date.parse(rows[0][0]), t1 = Date.parse(rows[rows.length - 1][0]);
   const X = t => P.l + (t - t0) / ((t1 - t0) || 1) * (W - P.l - P.r);
   const Y = v => P.t + (1 - (v - lo) / (hi - lo)) * (H - P.t - P.b);
-  const muted = cssVar("--muted"), line = cssVar("--line");
-  ctx.font = "22px " + cssVar("--f-mono"); ctx.fillStyle = muted; ctx.strokeStyle = line; ctx.lineWidth = 1;
+  ctx.fillStyle = muted; ctx.strokeStyle = line; ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i++){
     const v = lo + (hi - lo) * i / 4, y = Y(v);
     ctx.beginPath(); ctx.moveTo(P.l, y); ctx.lineTo(W - P.r, y); ctx.stroke();
     ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText(fmtIsk(v), P.l - 12, y);
   }
   ctx.textAlign = "center"; ctx.textBaseline = "top";
-  [0, 0.5, 1].forEach(f => { const t = t0 + (t1 - t0) * f; ctx.fillText(new Date(t).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }), Math.min(Math.max(X(t), P.l + 40), W - P.r - 40), H - P.b + 12); });
+  const span = (t1 - t0) / 864e5;
+  const dfmt = span > 200 ? { month: "short", year: "2-digit" } : { day: "2-digit", month: "short" };
+  [0, 0.5, 1].forEach(f => { const t = t0 + (t1 - t0) * f; ctx.fillText(new Date(t).toLocaleDateString("fr-FR", dfmt), Math.min(Math.max(X(t), P.l + 50), W - P.r - 50), H - P.b + 12); });
+  ctx.save(); ctx.beginPath(); ctx.rect(P.l, P.t, W - P.l - P.r, H - P.t - P.b); ctx.clip();
+  // low/high band
+  ctx.beginPath();
+  rows.forEach((x, i) => { const px = X(Date.parse(x[0])), py = Y(x[4]); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+  for (let i = rows.length - 1; i >= 0; i--){ const x = rows[i]; ctx.lineTo(X(Date.parse(x[0])), Y(x[3])); }
+  ctx.closePath(); ctx.globalAlpha = 0.16; ctx.fillStyle = acc; ctx.fill(); ctx.globalAlpha = 1;
   const hl = (v, c, dash) => { if (!v) return; ctx.save(); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(P.l, Y(v)); ctx.lineTo(W - P.r, Y(v)); ctx.stroke(); ctx.restore(); };
-  hl(r.avg, muted, [10, 8]); hl(r.buy, cssVar("--bad"), [4, 6]); hl(r.sell, cssVar("--good"), [4, 6]);
-  const acc = cssVar("--accent");
+  hl(avg, muted, [10, 8]); hl(r.buy, cssVar("--bad"), [4, 6]); hl(r.sell, cssVar("--good"), [4, 6]);
   ctx.beginPath(); rows.forEach((x, i) => { const px = X(Date.parse(x[0])), py = Y(x[1]); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
-  ctx.strokeStyle = acc; ctx.lineWidth = 3.5; ctx.setLineDash([]); ctx.stroke();
-  const lst = rows[rows.length - 1]; ctx.fillStyle = acc; ctx.beginPath(); ctx.arc(X(Date.parse(lst[0])), Y(lst[1]), 6, 0, 7); ctx.fill();
+  ctx.strokeStyle = acc; ctx.lineWidth = 3.5; ctx.setLineDash([]); ctx.lineJoin = "round"; ctx.stroke();
+  ctx.restore();
+  const pt = hover != null ? rows[hover] : rows[rows.length - 1];
+  if (hover != null){
+    const px = X(Date.parse(pt[0]));
+    ctx.save(); ctx.strokeStyle = muted; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(px, P.t); ctx.lineTo(px, H - P.b); ctx.stroke(); ctx.restore();
+  }
+  ctx.fillStyle = acc; ctx.beginPath(); ctx.arc(X(Date.parse(pt[0])), Y(pt[1]), hover != null ? 8 : 6, 0, 7); ctx.fill();
+  S.chartPts = { rows, X, Y, W, H, P, avg };
 }
+function chartHover(e){
+  const r = S.selected, cp = S.chartPts; if (!r || !cp) return;
+  const cv = $("chart"), rect = cv.getBoundingClientRect();
+  const sx = cv.width / rect.width;
+  const mx = (e.clientX - rect.left) * sx;
+  if (mx < cp.P.l - 20 || mx > cp.W - cp.P.r + 20){ chartLeave(); return; }
+  let best = 0, bd = Infinity;
+  cp.rows.forEach((x, i) => { const d = Math.abs(cp.X(Date.parse(x[0])) - mx); if (d < bd){ bd = d; best = i; } });
+  drawChart(r, best);
+  const x = cp.rows[best];
+  const tip = $("tip");
+  const vsAvg = cp.avg ? (x[1] - cp.avg) / cp.avg : null;
+  tip.innerHTML = `<div class="d">${new Date(x[0]).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "long", year: "numeric" })}</div>
+    <div><span>Prix moyen</span><b>${fmtIsk(x[1])}</b></div>
+    <div><span>Plus bas</span><b>${fmtIsk(x[3])}</b></div>
+    <div><span>Plus haut</span><b>${fmtIsk(x[4])}</b></div>
+    <div><span>Unités vendues</span><b>${fmtNum(x[2])}</b></div>
+    <div><span>Total échangé</span><b>${fmtIsk(x[1] * x[2])}</b></div>
+    <div><span>vs moyenne</span><b class="${vsAvg < 0 ? "pos" : "neg"}">${fmtPct(vsAvg)}</b></div>`;
+  tip.hidden = false;
+  const box = $("chartBox").getBoundingClientRect();
+  const px = cp.X(Date.parse(x[0])) / sx, py = cp.Y(x[1]) / (cv.height / rect.height);
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  let left = px + 14; if (left + tw > box.width) left = px - tw - 14; left = Math.max(0, left);
+  let top = py - th / 2; top = Math.max(0, Math.min(box.height - th, top));
+  tip.style.left = left + "px"; tip.style.top = top + "px";
+}
+function chartLeave(){ $("tip").hidden = true; if (S.selected) drawChart(S.selected); }
 
 /* ---------- flow ---------- */
 function setRunning(on){
@@ -547,6 +785,8 @@ async function scan(full){
   try{
     await loadOrders(); render();
     await loadNames(); render();
+    try{ await loadGroups(); }catch(e){ $("nNames").textContent = "Catégories indisponibles pour l'instant (" + e.message + ")"; }
+    render();
     if (full) await loadHistory();
     render();
   }catch(e){
@@ -563,15 +803,65 @@ document.querySelectorAll("#segPeriod button").forEach(b => {
     S.shown = 200; render(); if (S.selected && $("drawer").classList.contains("open")){ const r = S.rows.find(x => x.id === S.selected.id); if (r) openDrawer(r); }
   });
 });
-["selVol", "selDays", "selScope", "fTax", "fBroker", "fMin"].forEach(id => {
+const FILTER_IDS = ["fPriceMin", "fPriceMax", "fQtyMin", "fDiscMin", "fOrdersMin"];
+["selVol", "selDays", "selScope", "fTax", "fBroker", "fMin", ...FILTER_IDS].forEach(id => {
   const el = $(id); const v = LS.get(id, null); if (v != null) el.value = v;
-  el.addEventListener("change", () => { LS.set(id, el.value); S.shown = 200; render(); });
+  let t;
+  el.dataset.applied = el.value;
+  const apply = () => { if (el.dataset.applied === el.value) return; el.dataset.applied = el.value; LS.set(id, el.value); S.shown = 200; render(); };
+  el.addEventListener("change", apply);
+  if (el.tagName === "INPUT") el.addEventListener("input", () => { clearTimeout(t); t = setTimeout(apply, 300); });
 });
+$("btnReset").onclick = () => {
+  FILTER_IDS.forEach(id => { $(id).value = ""; $(id).dataset.applied = ""; LS.set(id, ""); });
+  $("selVol").value = "0"; $("selDays").value = "0"; LS.set("selVol", "0"); LS.set("selDays", "0");
+  $("q").value = ""; setCats(null);
+};
+// categories panel
+const toggleCats = open => {
+  $("catPanel").hidden = !open; $("btnCats").setAttribute("aria-expanded", String(open));
+  if (open){ buildCatPanel(); $("catPanel").scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+};
+$("btnCats").onclick = () => toggleCats($("catPanel").hidden);
+$("catClose").onclick = () => toggleCats(false);
+$("catAll").onclick = () => setCats(null);
+$("catNone").onclick = () => setCats(new Set());
+$("catGrid").addEventListener("click", e => {
+  const tg = e.target.closest("[data-toggle]");
+  if (tg){
+    const card = tg.closest(".cat"), open = card.dataset.open !== "1";
+    card.dataset.open = open ? "1" : "0"; card.querySelector(".subs").hidden = !open;
+    tg.textContent = open ? "−" : "+"; tg.setAttribute("aria-expanded", String(open));
+  }
+});
+$("catGrid").addEventListener("change", e => {
+  const cb = e.target; if (cb.type !== "checkbox") return;
+  const cur = new Set(S.cats || allCatKeys());
+  if (cb.dataset.root !== undefined){
+    const root = catTree().find(r => String(r.id) === cb.dataset.root);
+    if (root) root.subs.forEach(s => cb.checked ? cur.add(s.key) : cur.delete(s.key));
+  } else if (cb.dataset.key){
+    cb.checked ? cur.add(cb.dataset.key) : cur.delete(cb.dataset.key);
+  }
+  setCats(cur);
+});
+// chart period + hover
+document.querySelectorAll("#segChart button").forEach(b => {
+  b.setAttribute("aria-pressed", String(+b.dataset.d === S.chartDays));
+  b.addEventListener("click", () => {
+    S.chartDays = +b.dataset.d; LS.set("chartDays", S.chartDays);
+    document.querySelectorAll("#segChart button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    $("tip").hidden = true; if (S.selected) drawChart(S.selected);
+  });
+});
+$("chart").addEventListener("pointermove", chartHover);
+$("chart").addEventListener("pointerdown", chartHover);
+$("chart").addEventListener("pointerleave", chartLeave);
 let qT; $("q").addEventListener("input", () => { clearTimeout(qT); qT = setTimeout(() => { S.shown = 200; render(); }, 150); });
 const setTab = t => {
   S.tab = t; S.shown = 200;
   $("tabBuy").setAttribute("aria-selected", String(t === "buy")); $("tabTrade").setAttribute("aria-selected", String(t === "trade"));
-  $("fees").hidden = t !== "trade"; LS.set("tab", t); render();
+  $("fees").hidden = t !== "trade"; $("ctlDisc").hidden = t !== "buy"; LS.set("tab", t); render();
 };
 $("tabBuy").onclick = () => setTab("buy"); $("tabTrade").onclick = () => setTab("trade");
 $("thead").addEventListener("click", e => {
