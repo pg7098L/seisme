@@ -454,10 +454,45 @@ function setBar(id, frac){ $(id).style.width = Math.max(0, Math.min(1, frac))*10
 function msg(t){ $("msg").textContent = t || ""; }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-async function getJSON(url, opts){
-  const r = await fetch(url, opts);
-  if (!r.ok){ const e = new Error("HTTP "+r.status); e.status = r.status; throw e; }
-  return { data: await r.json(), headers: r.headers };
+/* All ESI calls go through one gate: limited concurrency, shared pause when CCP rate-limits us,
+   and retries with backoff. A rate-limited reply often lacks CORS headers, so the browser only
+   reports "Failed to fetch" (status 0) — treated as a throttle signal, not a fatal error. */
+const NET = { active: 0, max: 8, pauseUntil: 0, throttled: 0 };
+async function netAcquire(){
+  while (NET.active >= NET.max || Date.now() < NET.pauseUntil){
+    await sleep(Date.now() < NET.pauseUntil ? Math.min(1000, NET.pauseUntil - Date.now() + 20) : 40);
+  }
+  NET.active++;
+}
+function netPause(ms, why){
+  NET.pauseUntil = Math.max(NET.pauseUntil, Date.now() + ms);
+  NET.throttled = Date.now();
+  msg(`${why} Pause de ${Math.ceil((NET.pauseUntil - Date.now()) / 1000)} s, ça reprend tout seul.`);
+  setTimeout(() => { if (Date.now() >= NET.pauseUntil && Date.now() - NET.throttled > 1000) msg(""); }, ms + 1500);
+}
+async function getJSON(url, opts, tries = 5){
+  const waits = [2000, 6000, 15000, 30000, 60000];
+  for (let attempt = 0; ; attempt++){
+    await netAcquire();
+    let r = null;
+    try{ r = await fetch(url, opts); }catch(e){ r = null; }
+    finally{ NET.active--; }
+    if (r && r.ok){
+      const rem = r.headers.get("x-ratelimit-remaining");
+      if (rem != null && +rem < 30) netPause(8000, "Limite de requêtes CCP bientôt atteinte.");
+      return { data: await r.json(), headers: r.headers };
+    }
+    const status = r ? r.status : 0;
+    if (status === 400 || status === 404 || status === 422 || attempt >= tries){
+      const e = new Error(status ? "HTTP " + status : "réseau ou limite CCP"); e.status = status; throw e;
+    }
+    let wait = waits[Math.min(attempt, waits.length - 1)];
+    if (status === 0 || status === 420 || status === 429){
+      const ra = r ? parseFloat(r.headers.get("retry-after")) : NaN;
+      if (ra > 0) wait = ra * 1000 + 500;
+      netPause(wait, status === 0 ? "CCP ne répond plus (limite de requêtes ou coupure réseau)." : "CCP limite le nombre de requêtes.");
+    } else await sleep(wait);
+  }
 }
 
 /* ---------- 1. orders ---------- */
@@ -495,7 +530,7 @@ async function loadHubOrders(hub, prog){
       prog.add(0, 1);
     }
   };
-  await Promise.all(Array.from({ length: hub.k === "jita" ? 16 : 6 }, worker));
+  await Promise.all(Array.from({ length: hub.k === "jita" ? 8 : 3 }, worker));
   for (const a of agg.values()){
     a.sells.sort((x, y) => x[0] - y[0]); a.sells = a.sells.slice(0, 60);
     a.buys.sort((x, y) => y[0] - x[0]); a.buys = a.buys.slice(0, 60);
@@ -577,7 +612,7 @@ async function loadGroups(){
         if (++done % 50 === 0) $("nNames").textContent = `Catégories du marché : ${done} / ${ids.length}`;
       }
     };
-    await Promise.all(Array.from({ length: 20 }, worker));
+    await Promise.all(Array.from({ length: 6 }, worker));
     if (S.stop) return;
     S.groups = groups;
     idbPut("meta", "groups", { t: Date.now(), lang: "fr", groups });
@@ -677,7 +712,7 @@ async function ensureVols(ids){
       }catch(e){}
     }
   };
-  await Promise.all(Array.from({ length: 16 }, worker));
+  await Promise.all(Array.from({ length: 4 }, worker));
   volRunning = false;
   render();
 }
@@ -812,7 +847,7 @@ async function loadHistory(){
   const ranked = [...S.orders.entries()].filter(([, a]) => a.nSell > 0)
     .sort((x, y) => (y[1].nSell + y[1].nBuy) - (x[1].nSell + x[1].nBuy)).slice(0, scope).map(([id]) => id);
   const todo = ranked.filter(id => { const h = S.hist.get(id); return !h || h.t < dt; });
-  const total = todo.length; let done = 0, inflight = 0;
+  const total = todo.length; let done = 0, inflight = 0; const fails = {};
   const cached = ranked.length - total;
   $("nHist").textContent = total ? `${cached.toLocaleString("fr-FR")} déjà en cache, ${total.toLocaleString("fr-FR")} à télécharger` : "Tout est en cache pour aujourd'hui";
   const upd = () => {
@@ -832,18 +867,13 @@ async function loadHistory(){
       done++;
     }catch(e){
       if (e.status === 404 || e.status === 422 || e.status === 400){ const v = { t: Date.now(), rows: [] }; S.hist.set(id, v); idbPut("hist", id, v); done++; }
-      else { todo.push(id); throw e; }
+      else { fails[id] = (fails[id] || 0) + 1; if (fails[id] < 2) todo.push(id); else done++; throw e; }
     }finally{ inflight--; }
   };
   for (let i = 0; i < todo.length && !S.stop; i++){
     const id = todo[i];
     const t0 = Date.now();
-    fetchOne(id).catch(async e => {
-      if (!S.pauseUntil || S.pauseUntil < Date.now()){
-        S.pauseUntil = Date.now() + 65000;
-        msg("Limite de requêtes de CCP atteinte. Pause d'une minute, ça reprend tout seul.");
-      }
-    });
+    fetchOne(id).catch(() => {});
     if (S.pauseUntil && S.pauseUntil > Date.now()){ await sleep(S.pauseUntil - Date.now()); msg(""); }
     if (Date.now() - lastRender > 1500){ lastRender = Date.now(); upd(); render(); }
     const wait = HIST_INTERVAL - (Date.now() - t0);
@@ -1061,7 +1091,7 @@ function render(){
   } else empty.hidden = true;
   $("moreBox").hidden = S.rows.length <= S.shown;
   const hubRows = S.tab === "hub" ? S.rows : (S.hubOrders.amarr || S.hubOrders.dodixie ? computeHubRows() : []);
-  const missingVols = hubRows.filter(r => !S.vols.has(r.id)).map(r => r.id);
+  const missingVols = hubRows.filter(r => !S.vols.has(r.id)).sort((a, b) => b.profit - a.profit).slice(0, 400).map(r => r.id);
   if (missingVols.length) ensureVols(missingVols);
   updateHighlights(S.tab === "buy" ? S.rows : computeBuyRows("all"), hubRows);
   const sh = SHIP[$("hShip").value] || SHIP.ind;
@@ -1324,8 +1354,15 @@ async function scan(full){
     render();
     if (full) await loadHistory();
     render();
+    S.retries = 0;
   }catch(e){
-    msg("Impossible de joindre l'API de CCP (" + e.message + "). Vérifie ta connexion, ou réessaie dans une minute si le serveur est en maintenance (downtime vers 13 h heure de Paris).");
+    S.retries = (S.retries || 0) + 1;
+    if (S.retries <= 3 && !S.stop){
+      msg(`CCP ne répond pas pour l'instant (${e.message}). Nouvel essai automatique dans 1 minute (${S.retries}/3). Les données déjà chargées restent affichées.`);
+      setTimeout(() => scan(full), 60000);
+    } else {
+      msg(`Impossible de joindre l'API de CCP (${e.message}). Si c'est entre 13 h et 13 h 30, le serveur est en maintenance. Sinon, attends quelques minutes : CCP limite le nombre de requêtes par connexion.`);
+    }
   }finally{ setRunning(false); render(); }
 }
 
